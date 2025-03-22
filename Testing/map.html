@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Planner</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKZNuNToV8AGQFChdBOVfzBv0bmBLAIYw&callback=initMap" async defer></script>
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Travel Planner</h1>
+    <input type="text" id="location" placeholder="Enter a location">
+    <button onclick="addStop()">Add Stop</button>
+    
+    <div id="map"></div>
+
+    <script>
+        let map;
+        let markers = [];
+        let stops = [];
+        let routePath; // Line connecting stops
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 5,
+                center: { lat: 20.5937, lng: 78.9629 } // India center
+            });
+
+            // Initialize polyline for route
+            routePath = new google.maps.Polyline({
+                path: [],
+                geodesic: true,
+                strokeColor: "#FF0000",
+                strokeOpacity: 1.0,
+                strokeWeight: 3
+            });
+            routePath.setMap(map);
+
+            {% for stop in stops %}
+                addMarker({ lat: {{ stop.lat }}, lng: {{ stop.lng }}, name: "{{ stop.name }}" });
+            {% endfor %}
+        }
+
+        function addMarker(stop) {
+            let marker = new google.maps.Marker({
+                position: { lat: stop.lat, lng: stop.lng },
+                map: map,
+                title: stop.name
+            });
+            markers.push(marker);
+            stops.push(stop);
+            updateRoute();
+        }
+
+        function addStop() {
+            let location = document.getElementById("location").value;
+            if (!location) return;
+
+            fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${location}&key=AIzaSyCKZNuNToV8AGQFChdBOVfzBv0bmBLAIYw`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "OK") {
+                        let place = data.results[0].geometry.location;
+                        let stop = { lat: place.lat, lng: place.lng, name: location };
+                        addMarker(stop);
+                        map.setCenter(place);
+                        map.setZoom(10);
+                    } else {
+                        alert("Location not found!");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        function updateRoute() {
+            let path = stops.map(stop => ({ lat: stop.lat, lng: stop.lng }));
+            routePath.setPath(path);
+        }
+    </script>
+</body>
+</html>

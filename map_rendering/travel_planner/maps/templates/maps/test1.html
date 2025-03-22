@@ -1,0 +1,122 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trip Planner</title>
+    <meta name="description" content="Plan your trip with our interactive map" />
+    <link rel="stylesheet" href="{% static 'maps/test1.css' %}">
+
+
+  </head>
+
+  <body>
+    <div class="app-container">
+      <!-- Left Sidebar -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-toggle">
+          <button id="sidebarToggleBtn" class="toggle-btn">
+            <span class="toggle-icon"></span>
+          </button>
+        </div>
+        
+        <div class="sidebar-content">
+          <button class="sidebar-btn invite-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus"><path d="M14 19a6 6 0 0 0-12 0"/><circle cx="8" cy="9" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="16" x2="22" y1="11" y2="11"/></svg>
+            <span>Invite Friend</span>
+          </button>
+          
+          <button class="sidebar-btn estimate-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span>Estimate Cost</span>
+          </button>
+          
+          <button class="sidebar-btn edit-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+            <span>Edit Details</span>
+          </button>
+          
+          <button class="sidebar-btn save-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-save"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>Save Trip</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="main-content">
+        <div class="map-container" id="map"></div>
+        
+        <!-- Trip Setup Modal -->
+        <div class="modal" id="tripSetupModal">
+          <div class="modal-content">
+            <h2>Plan Your Trip</h2>
+            <form id="tripDetailsForm">
+              <div class="form-group">
+                <label for="tripName">Trip Name</label>
+                <input type="text" id="tripName" name="tripName" placeholder="Name of trip" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="startDate">Start Date</label>
+                <input type="date" id="startDate" name="startDate" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="endDate">End Date</label>
+                <input type="date" id="endDate" name="endDate" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="travel purpose">Travel Mode</label>
+                <select id="travel purpose" name="travel purpose">
+                  <option value="Personal">Personal</option>
+                  <option value="Family & Friends">Family & Friends</option>
+                  <option value="Educational">Educational</option>
+                  <option value="Buisness">Buisness</option>
+                </select>
+              </div>
+              
+              <button type="submit" class="submit-btn">Create Trip</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Destination Input (moved to right) -->
+      <div class="destination-panel">
+        <div class="destination-card">
+          <div class="search-container">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="destinationInput" placeholder="Enter destination">
+          </div>
+          <div class="button-container">
+            <button id="addDestinationBtn" class="dest-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><path d="M20 10c0-4.4-3.6-8-8-8s-8 3.6-8 8 3.6 8 8 8h8"/><polyline points="16 14 20 18 16 22"/></svg>
+              Add Stop
+            </button>
+            <button id="addSubstopBtn" class="dest-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              Add Sub-stop
+            </button>
+          </div>
+        </div>
+        <div class="destinations-list" id="destinationsList">
+          <!-- Destinations will be added here dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Load JavaScript -->
+    <script>
+       let tripStops = JSON.parse('{{ stops|safe }}');  // Pass stops from Django
+
+  </script>
+  <!-- Load Google Maps API  -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=APIKEY"></script>
+  
+  <script src="{% static 'maps/test1.js' %}"></script>
+    
+  </body>
+</html>

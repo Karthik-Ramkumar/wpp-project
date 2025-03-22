@@ -1,0 +1,15 @@
+https://prismic.io/blog/css-background-effects
+
+13
+16
+20
+23
+30
+32
+34?
+35?
+40?
+
+https://www.lydiahallie.com/blog/event-loop?ref=dailydev
+
+https://chatgpt.com/c/67d06cd9-dadc-8012-8b1c-89792b2b3b64 (how to run django outside ur system for others to access)
