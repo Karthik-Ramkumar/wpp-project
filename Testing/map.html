@@ -61,7 +61,7 @@
             let location = document.getElementById("location").value;
             if (!location) return;
 
-            fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${location}&key=AIzaSyCKZNuNToV8AGQFChdBOVfzBv0bmBLAIYw`)
+            fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${location}&key=APIKEY`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === "OK") {
