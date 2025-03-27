@@ -50,3 +50,25 @@ import os
 
 def get_google_maps_api_key(request):
     return JsonResponse({"GOOGLE_MAPS_API_KEY": os.getenv("GOOGLE_MAPS_API_KEY")})
+
+from django.shortcuts import render, get_object_or_404
+from .models import Trip
+from django.contrib.auth.models import User
+
+def get_test_user():
+    test_user, created = User.objects.get_or_create(username="test_user")
+    return test_user
+
+def user_dashboard(request):
+    user = get_test_user()  # Always use test_user for now
+    trips = Trip.objects.filter(user=user)  # Fetch only test_user's trips
+    return render(request, "dashboard.html", {"trips": trips})
+
+from django.shortcuts import render
+from maps.models import Trip
+from django.contrib.auth.models import User
+
+def trip_list(request):
+    test_user = User.objects.get(username="test_user")  # Fetch test_user
+    trips = Trip.objects.filter(user=test_user)  # Fetch trips for test_user
+    return render(request, "maps/trip_list.html", {"trips": trips})
