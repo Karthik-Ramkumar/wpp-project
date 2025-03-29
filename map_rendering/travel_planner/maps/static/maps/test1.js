@@ -1,12 +1,18 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     console.log("JS Loaded, initializing...");
 
-    // Ensure modal is visible on page load
-    const modal = document.getElementById("tripSetupModal");
-    if (modal) {
-        modal.classList.add("active");
-    } else {
-        console.error("Trip setup modal not found!");
+    try {
+        const userResponse = await fetch('/whoami/');
+        const userData = await userResponse.json();
+
+        if (userData.username) {
+            console.log("Logged in as:", userData.username);
+            loadUserTrips(userData.username);
+        } else {
+            console.log("User not logged in.");
+        }
+    } catch (error) {
+        console.error("Error fetching user:", error);
     }
 
     init(); // Initialize the app
@@ -31,11 +37,10 @@ const editBtn = document.querySelector(".edit-btn");
 const saveBtn = document.querySelector(".save-btn");
 
 function init() {
-    if (tripSetupModal) {
-        tripSetupModal.classList.add("active");
-    }
+    fetchTrips();
     setupEventListeners();
-    if (typeof google !== "undefined" && google.maps) {
+
+    if (window.google && window.google.maps) {
         initMap();
     } else {
         console.error("Google Maps API failed to load.");
@@ -67,7 +72,7 @@ function setupEventListeners() {
         editBtn.removeEventListener("click", openTripModal);
         editBtn.addEventListener("click", openTripModal);
     }
-    
+
     function openTripModal() {
         if (tripSetupModal) {
             tripSetupModal.classList.add("active");
@@ -98,21 +103,41 @@ function enterHandler(e) {
     }
 }
 
-function handleTripFormSubmit(event) {
+async function handleTripFormSubmit(event) {
     event.preventDefault(); // Prevent page reload
 
     const formData = new FormData(tripDetailsForm);
-    tripName = formData.get("tripName");
+    const tripData = {
+        name: formData.get("tripName"),
+        start_date: formData.get("startDate"),
+        end_date: formData.get("endDate"),
+        travel_mode: formData.get("travelMode")
+    };
 
-    if (!tripName.trim()) {
-        alert("Please enter a trip name!");
-        return;
+    try {
+        const response = await fetch('/trips/create/', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: JSON.stringify(tripData)
+        });
+
+        if (response.ok) {
+            console.log("Trip Created Successfully!");
+            document.getElementById("tripSetupModal").classList.remove("active");
+            loadUserTrips();
+        } else {
+            console.error("Error creating trip:", response);
+        }
+    } catch (error) {
+        console.error("Error:", error);
     }
+}
 
-    console.log("Trip Created:", { tripName });
-
-    // Hide the modal after successful input
-    tripSetupModal.classList.remove("active");
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
 }
 
 async function addDestination(isSubStop) {
@@ -184,31 +209,28 @@ function initMap() {
     });
 }
 
-function updateMapMarkers() {
-    if (!map) return;
 
-    markers.forEach((marker) => marker.setMap(null)); // Clear old markers
+function updateMapMarkers() {
+    markers.forEach(marker => marker.setMap(null)); // Clear existing markers
     markers = [];
 
-    let bounds = new google.maps.LatLngBounds();
-
-    destinations.forEach((dest) => {
+    destinations.forEach(dest => {
+        if (!dest.coordinates || typeof dest.coordinates.lat !== "number" || typeof dest.coordinates.lng !== "number") {
+            console.error("Invalid destination coordinates:", dest);
+            return;
+        }
+        
+        // Proceed with adding markers only if coordinates are valid
         const marker = new google.maps.Marker({
-            position: dest.coordinates,
-            map,
-            title: dest.name,
+            position: { lat: dest.coordinates.lat, lng: dest.coordinates.lng },
+            map: map
         });
-        markers.push(marker);
-        bounds.extend(dest.coordinates); // Extend bounds for each marker
-    });
 
-    if (destinations.length > 1) {
-        map.fitBounds(bounds); // Auto-adjust map to show all markers
-    } else if (destinations.length === 1) {
-        map.setCenter(destinations[0].coordinates);
-        map.setZoom(7); // Set a reasonable zoom level instead of zooming in too much
-    }
+        markers.push(marker);
+        
+    });
 }
+ 
 
 
 
@@ -218,6 +240,44 @@ function generateId() {
 
 document.addEventListener("DOMContentLoaded", init);
 
+async function fetchTrips() {
+    try {
+        const response = await fetch("/api/get_trips/");
+        const textData = await response.text();
+        console.log("Raw API Response:", textData); // Debugging
+
+        const data = JSON.parse(textData); // Convert to JSON
+        console.log("Parsed Data:", data);
+
+        if (!data.trips || !Array.isArray(data.trips)) {
+            throw new Error("Invalid API response structure");
+        }
+
+        tripName = data.trips[0].name;
+        destinations = data.trips[0].destinations || [];
+
+        renderDestinationsList();
+        updateMapMarkers();
+    } catch (error) {
+        console.error("Error fetching trips:", error);
+    }
+}
+async function loadUserTrips(username) {
+    try {
+        const response = await fetch(`/trips/?user=${username}`);
+        const trips = await response.json();
+
+        if (trips.length > 0) {
+            console.log("Existing trips found:", trips);
+            renderTrips(trips);
+        } else {
+            console.log("No trips found. Showing trip setup modal.");
+            document.getElementById("tripSetupModal").classList.add("active");
+        }
+    } catch (error) {
+        console.error("Error fetching trips:", error);
+    }
+}
 // for directions between places
 
 

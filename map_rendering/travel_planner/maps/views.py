@@ -7,6 +7,8 @@ from django.conf import settings # type: ignore
 from dotenv import load_dotenv # type: ignore
 from django.utils.safestring import mark_safe # type: ignore
 import json
+from maps.models import Trip
+from django.contrib.auth.models import User # type: ignore
 load_dotenv()
 
 API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")  # Hardcoded API Key
@@ -51,9 +53,9 @@ import os
 def get_google_maps_api_key(request):
     return JsonResponse({"GOOGLE_MAPS_API_KEY": os.getenv("GOOGLE_MAPS_API_KEY")})
 
-from django.shortcuts import render, get_object_or_404
-from .models import Trip
-from django.contrib.auth.models import User
+from django.shortcuts import render, get_object_or_404 # type: ignore
+from .models import Trip # type: ignore
+from django.contrib.auth.models import User # type: ignore
 
 def get_test_user():
     test_user, created = User.objects.get_or_create(username="test_user")
@@ -64,11 +66,89 @@ def user_dashboard(request):
     trips = Trip.objects.filter(user=user)  # Fetch only test_user's trips
     return render(request, "dashboard.html", {"trips": trips})
 
-from django.shortcuts import render
+from django.shortcuts import render # type: ignore
 from maps.models import Trip
-from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required # type: ignore
 
+@login_required
 def trip_list(request):
-    test_user = User.objects.get(username="test_user")  # Fetch test_user
-    trips = Trip.objects.filter(user=test_user)  # Fetch trips for test_user
+    trips = Trip.objects.filter(user=request.user)  # Fetch trips for logged-in user
     return render(request, "maps/trip_list.html", {"trips": trips})
+
+from maps.models import Trip, Destination
+
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+@login_required
+def get_trips(request):
+    trips = Trip.objects.filter(user=request.user)
+
+    if not trips.exists():
+        return JsonResponse({"trips": []})  # Return empty list instead of error
+
+    trips_data = []
+    for trip in trips:
+        destinations_data = []
+        for dest in trip.destinations.all():
+            if dest.latitude is None or dest.longitude is None:
+                continue  # Skip invalid destinations
+
+            destinations_data.append({
+                "name": dest.name,
+                "lat": float(dest.latitude),
+                "lng": float(dest.longitude),
+            })
+
+        trips_data.append({
+            "name": trip.name,
+            "start_date": str(trip.start_date),
+            "end_date": str(trip.end_date),
+            "destinations": destinations_data
+        })
+
+    return JsonResponse({"trips": trips_data})
+
+from django.shortcuts import redirect # type: ignore
+from django.contrib.auth import login # type: ignore
+from django.contrib.auth.models import User # type: ignore
+
+def auto_login(request):
+    user = User.objects.get(username="test_user")
+    user.backend = 'django.contrib.auth.backends.ModelBackend'  # Set backend manually
+    login(request, user)  # Log the user in
+    return redirect('/')  # Redirect to the home page
+
+
+def whoami(request):
+    if request.user.is_authenticated:
+        return JsonResponse({"username": request.user.username})
+    return JsonResponse({"error": "Not logged in"}, status=401)
+
+from django.http import JsonResponse # type: ignore
+from django.contrib.auth.decorators import login_required # type: ignore
+from .models import Trip
+
+@login_required
+def whoami(request):
+    return JsonResponse({"username": request.user.username})
+
+@login_required
+def user_trips(request):
+    trips = Trip.objects.filter(user=request.user).values()
+    return JsonResponse(list(trips), safe=False)
+
+from django.shortcuts import render # type: ignore
+from django.contrib.auth.decorators import login_required # type: ignore
+from .models import Trip
+
+@login_required
+def home(request):
+    user = request.user
+    trips = Trip.objects.filter(user=user).order_by('-created_at')
+
+    if trips.exists():
+        latest_trip = trips.first()
+    else:
+        latest_trip = None
+
+    return render(request, "index.html", {"latest_trip": latest_trip})

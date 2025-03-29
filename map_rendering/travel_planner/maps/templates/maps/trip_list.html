@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Trips</title>
+    <title>Trips</title>
 </head>
 <body>
-    <h2>Saved Trips</h2>
+    <h1>Your Trips</h1>
     <ul>
         {% for trip in trips %}
-            <li>{{ trip.name }} - {{ trip.start_date }} to {{ trip.end_date }}</li>
-        {% empty %}
-            <li>No trips found.</li>
+            <li>{{ trip.name }} ({{ trip.start_date }} - {{ trip.end_date }})</li>
         {% endfor %}
     </ul>
 </body>
