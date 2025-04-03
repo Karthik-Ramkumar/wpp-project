@@ -18,4 +18,5 @@ urlpatterns = [
     path("trips/", views.user_trips, name="user_trips"),
     path("", home, name="home"),
     path('api/get_trips/', get_trips, name='get_trips'),
+    path("save_stop/", views.save_stop, name="save_stop"),
 ]

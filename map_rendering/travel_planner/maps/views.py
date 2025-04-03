@@ -82,30 +82,24 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def get_trips(request):
     trips = Trip.objects.filter(user=request.user)
-
-    if not trips.exists():
-        return JsonResponse({"trips": []})  # Return empty list instead of error
-
     trips_data = []
     for trip in trips:
         destinations_data = []
         for dest in trip.destinations.all():
-            if dest.latitude is None or dest.longitude is None:
-                continue  # Skip invalid destinations
-
+            if not dest.latitude or not dest.longitude:
+                print(f"Invalid destination: {dest}")  # Debug: Check invalid destinations
+                continue
             destinations_data.append({
                 "name": dest.name,
                 "lat": float(dest.latitude),
                 "lng": float(dest.longitude),
             })
-
         trips_data.append({
             "name": trip.name,
             "start_date": str(trip.start_date),
             "end_date": str(trip.end_date),
-            "destinations": destinations_data
+            "destinations": destinations_data,
         })
-
     return JsonResponse({"trips": trips_data})
 
 from django.shortcuts import redirect # type: ignore
@@ -152,3 +146,30 @@ def home(request):
         latest_trip = None
 
     return render(request, "index.html", {"latest_trip": latest_trip})
+
+from django.http import JsonResponse
+from maps.models import Trip, Destination  # Assuming you have a Destination model
+
+@login_required
+def save_stop(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        print(f"Received data: {data}")  # Debug: Print received data
+        trip_id = data.get("trip_id")
+        stop_name = data.get("name")
+        lat = data.get("lat")
+        lng = data.get("lng")
+        print(f"Saving stop: {stop_name}, Lat: {lat}, Lng: {lng}")
+
+        if not (trip_id and stop_name and lat and lng):
+            print("Invalid data")  # Debug: Print invalid data message
+            return JsonResponse({"error": "Invalid data"}, status=400)
+
+        try:
+            trip = Trip.objects.get(id=trip_id, user=request.user)
+            trip.destinations.create(name=stop_name, latitude=lat, longitude=lng)
+            print(f"Stop saved: {stop_name}")  # Debug: Print saved stop
+            return JsonResponse({"success": True})
+        except Trip.DoesNotExist:
+            print("Trip not found")  # Debug: Print trip not found message
+            return JsonResponse({"error": "Trip not found"}, status=404)

@@ -144,7 +144,6 @@ async function addDestination(isSubStop) {
     const destinationName = destinationInput.value.trim();
     if (!destinationName) return;
 
-    // Check if destination already exists
     if (destinations.some(dest => dest.name.toLowerCase() === destinationName.toLowerCase())) {
         alert("Destination already added!");
         return;
@@ -156,8 +155,32 @@ async function addDestination(isSubStop) {
         return;
     }
 
-    destinations.push({ id: generateId(), name: destinationName, coordinates, isSubStop });
+    // Save stop to the backend
+    try {
+        const response = await fetch("/save_stop/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify({
+                trip_id: currentTripId,  // Replace with the actual trip ID
+                name: destinationName,
+                lat: coordinates.lat,
+                lng: coordinates.lng,
+            }),
+        });
 
+        if (response.ok) {
+            console.log("Stop saved successfully!");
+        } else {
+            console.error("Error saving stop:", await response.json());
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+
+    destinations.push({ id: generateId(), name: destinationName, coordinates, isSubStop });
     destinationInput.value = "";
     renderDestinationsList();
     updateMapMarkers();
@@ -211,23 +234,16 @@ function initMap() {
 
 
 function updateMapMarkers() {
-    markers.forEach(marker => marker.setMap(null)); // Clear existing markers
-    markers = [];
-
     destinations.forEach(dest => {
-        if (!dest.coordinates || typeof dest.coordinates.lat !== "number" || typeof dest.coordinates.lng !== "number") {
+        console.log("Destination:", dest); // Debug: Check destination data
+        if (!dest.coordinates || !dest.coordinates.lat || !dest.coordinates.lng) {
             console.error("Invalid destination coordinates:", dest);
             return;
         }
-        
-        // Proceed with adding markers only if coordinates are valid
-        const marker = new google.maps.Marker({
+        new google.maps.Marker({
             position: { lat: dest.coordinates.lat, lng: dest.coordinates.lng },
-            map: map
+            map: map,
         });
-
-        markers.push(marker);
-        
     });
 }
  
