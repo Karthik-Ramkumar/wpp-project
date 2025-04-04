@@ -70,7 +70,7 @@
               
               <div class="form-group">
                 <label for="travel purpose">Travel Mode</label>
-                <select id="travel purpose" name="travel purpose">
+                <select id="travel_purpose" name="travel_purpose">
                   <option value="Personal">Personal</option>
                   <option value="Family & Friends">Family & Friends</option>
                   <option value="Educational">Educational</option>
@@ -110,11 +110,11 @@
 
     <!-- Load JavaScript -->
     <script>
-       let tripStops = JSON.parse('{{ stops|safe }}');  // Pass stops from Django
-
-  </script>
+       let tripStops = JSON.parse('{{ stops|escapejs }}') || [];  // Pass stops from Django
+    </script>
   <!-- Load Google Maps API  -->
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKZNuNToV8AGQFChdBOVfzBv0bmBLAIYw&callback=init"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=init" async defer></script>
+
   
   <script src="{% static 'maps/test1.js' %}"></script>
     

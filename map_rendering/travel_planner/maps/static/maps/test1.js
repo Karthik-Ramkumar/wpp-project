@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Global state
 let destinations = [];
 let tripName = "My Trip";
+let currentTripId = null;
 let map;
 let markers = [];
 
@@ -33,8 +34,6 @@ const destinationInput = document.getElementById("destinationInput");
 const addDestinationBtn = document.getElementById("addDestinationBtn");
 const addSubstopBtn = document.getElementById("addSubstopBtn");
 const destinationsList = document.getElementById("destinationsList");
-const editBtn = document.querySelector(".edit-btn");
-const saveBtn = document.querySelector(".save-btn");
 
 function init() {
     fetchTrips();
@@ -48,63 +47,24 @@ function init() {
 }
 
 function setupEventListeners() {
-    if (sidebarToggleBtn && sidebarEl) {
-        sidebarToggleBtn.removeEventListener("click", toggleSidebar);
-        sidebarToggleBtn.addEventListener("click", toggleSidebar);
-    }
-    if (tripDetailsForm) {
-        tripDetailsForm.removeEventListener("submit", handleTripFormSubmit);
-        tripDetailsForm.addEventListener("submit", handleTripFormSubmit);
-    }
-    if (addDestinationBtn) {
-        addDestinationBtn.removeEventListener("click", addDestinationHandler);
-        addDestinationBtn.addEventListener("click", addDestinationHandler);
-    }
-    if (addSubstopBtn) {
-        addSubstopBtn.removeEventListener("click", addSubstopHandler);
-        addSubstopBtn.addEventListener("click", addSubstopHandler);
-    }
-    if (destinationInput) {
-        destinationInput.removeEventListener("keydown", enterHandler);
-        destinationInput.addEventListener("keydown", enterHandler);
-    }
-    if (editBtn) {
-        editBtn.removeEventListener("click", openTripModal);
-        editBtn.addEventListener("click", openTripModal);
-    }
-
-    function openTripModal() {
-        if (tripSetupModal) {
-            tripSetupModal.classList.add("active");
-        } else {
-            console.error("Trip setup modal not found!");
+    sidebarToggleBtn?.addEventListener("click", toggleSidebar);
+    tripDetailsForm?.addEventListener("submit", handleTripFormSubmit);
+    addDestinationBtn?.addEventListener("click", () => addDestination(false));
+    addSubstopBtn?.addEventListener("click", () => addDestination(true));
+    destinationInput?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            addDestination(false);
         }
-    }
+    });
 }
 
-
-// Helper functions
 function toggleSidebar() {
     sidebarEl.classList.toggle("collapsed");
 }
 
-function addDestinationHandler() {
-    addDestination(false);
-}
-
-function addSubstopHandler() {
-    addDestination(true);
-}
-
-function enterHandler(e) {
-    if (e.key === "Enter") {
-        e.preventDefault(); // Prevent duplicate calls
-        addDestination(false);
-    }
-}
-
 async function handleTripFormSubmit(event) {
-    event.preventDefault(); // Prevent page reload
+    event.preventDefault();
 
     const formData = new FormData(tripDetailsForm);
     const tripData = {
@@ -126,10 +86,12 @@ async function handleTripFormSubmit(event) {
 
         if (response.ok) {
             console.log("Trip Created Successfully!");
-            document.getElementById("tripSetupModal").classList.remove("active");
+            const data = await response.json();
+            currentTripId = data.trip_id; // Store trip ID
+            tripSetupModal.classList.remove("active");
             loadUserTrips();
         } else {
-            console.error("Error creating trip:", response);
+            console.error("Error creating trip:", await response.text());
         }
     } catch (error) {
         console.error("Error:", error);
@@ -137,7 +99,7 @@ async function handleTripFormSubmit(event) {
 }
 
 function getCSRFToken() {
-    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
 }
 
 async function addDestination(isSubStop) {
@@ -155,7 +117,6 @@ async function addDestination(isSubStop) {
         return;
     }
 
-    // Save stop to the backend
     try {
         const response = await fetch("/save_stop/", {
             method: "POST",
@@ -164,7 +125,7 @@ async function addDestination(isSubStop) {
                 "X-CSRFToken": getCSRFToken(),
             },
             body: JSON.stringify({
-                trip_id: currentTripId,  // Replace with the actual trip ID
+                trip_id: currentTripId,
                 name: destinationName,
                 lat: coordinates.lat,
                 lng: coordinates.lng,
@@ -180,7 +141,7 @@ async function addDestination(isSubStop) {
         console.error("Error:", error);
     }
 
-    destinations.push({ id: generateId(), name: destinationName, coordinates, isSubStop });
+    destinations.push({ id: generateId(), name: destinationName, lat: coordinates.lat, lng: coordinates.lng, isSubStop });
     destinationInput.value = "";
     renderDestinationsList();
     updateMapMarkers();
@@ -224,60 +185,67 @@ function removeDestination(id) {
     updateMapMarkers();
 }
 
-// Initialize Google Maps
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 20.5937, lng: 78.9629 }, // Default to India
+        center: { lat: 20.5937, lng: 78.9629 },
         zoom: 5,
     });
 }
 
-
 function updateMapMarkers() {
+    if (!map) {
+        console.error("Map not initialized!");
+        return;
+    }
+
+    markers.forEach(marker => marker.setMap(null)); // Clear old markers
+    markers = [];
+
     destinations.forEach(dest => {
-        console.log("Destination:", dest); // Debug: Check destination data
-        if (!dest.coordinates || !dest.coordinates.lat || !dest.coordinates.lng) {
+        if (!dest.lat || !dest.lng || isNaN(dest.lat) || isNaN(dest.lng)) {
             console.error("Invalid destination coordinates:", dest);
             return;
         }
-        new google.maps.Marker({
-            position: { lat: dest.coordinates.lat, lng: dest.coordinates.lng },
+
+        new google.maps.marker.AdvancedMarkerElement({
+            position: { lat: parseFloat(dest.lat), lng: parseFloat(dest.lng) },
             map: map,
         });
+
+        markers.push(marker);
     });
 }
- 
-
-
 
 function generateId() {
     return Math.random().toString(36).substr(2, 9);
 }
 
-document.addEventListener("DOMContentLoaded", init);
-
 async function fetchTrips() {
     try {
-        const response = await fetch("/api/get_trips/");
+        const response = await fetch('/trips/');
         const textData = await response.text();
-        console.log("Raw API Response:", textData); // Debugging
+        console.log("Raw API Response:", textData);
 
-        const data = JSON.parse(textData); // Convert to JSON
+        const data = JSON.parse(textData);
         console.log("Parsed Data:", data);
 
         if (!data.trips || !Array.isArray(data.trips)) {
             throw new Error("Invalid API response structure");
         }
 
-        tripName = data.trips[0].name;
-        destinations = data.trips[0].destinations || [];
+        if (data.trips.length > 0) {
+            currentTripId = data.trips[0].id;
+            tripName = data.trips[0].name;
+            destinations = data.trips[0].destinations || [];
 
-        renderDestinationsList();
-        updateMapMarkers();
+            renderDestinationsList();
+            updateMapMarkers();
+        }
     } catch (error) {
         console.error("Error fetching trips:", error);
     }
 }
+
 async function loadUserTrips(username) {
     try {
         const response = await fetch(`/trips/?user=${username}`);
@@ -285,15 +253,14 @@ async function loadUserTrips(username) {
 
         if (trips.length > 0) {
             console.log("Existing trips found:", trips);
-            renderTrips(trips);
+            currentTripId = trips[0].id;
+            renderDestinationsList();
+            updateMapMarkers();
         } else {
             console.log("No trips found. Showing trip setup modal.");
-            document.getElementById("tripSetupModal").classList.add("active");
+            tripSetupModal.classList.add("active");
         }
     } catch (error) {
         console.error("Error fetching trips:", error);
     }
 }
-// for directions between places
-
-

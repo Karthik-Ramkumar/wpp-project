@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "wpp-project",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "C:/Users/jbara/OneDrive/Desktop/wpp-project/map_rendering/travel_planner/new_env/bin/python3",
+            //"python": "/mnt/c/Users/jbara/OneDrive/Desktop/wpp-project/map_rendering/travel_planner/new_env/bin/python3",
+            "program": "C:/Users/jbara/OneDrive/Desktop/wpp-project/map_rendering/travel_planner/manage.py",
+            //"program": "/mnt/c/Users/jbara/OneDrive/Desktop/wpp-project/map_rendering/travel_planner/manage.py",
+            "console": "integratedTerminal",
+            "args": ["runserver"]
+        }
+    ]
+}
+

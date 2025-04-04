@@ -1,0 +1,5 @@
+# ignore all .env files
+.env
+**/.env
+# Ignore the new_env folder
+new_env/

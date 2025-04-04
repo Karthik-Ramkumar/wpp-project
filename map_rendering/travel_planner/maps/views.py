@@ -33,6 +33,7 @@ def map_view(request):
         "api_key": API_KEY
     })
 
+
 def geocode_location(request):
     place = request.GET.get("place")
     if not place:
@@ -72,14 +73,15 @@ from django.contrib.auth.decorators import login_required # type: ignore
 
 @login_required
 def trip_list(request):
-    trips = Trip.objects.filter(user=request.user)  # Fetch trips for logged-in user
-    return render(request, "maps/trip_list.html", {"trips": trips})
+    trips = Trip.objects.all().values("name", "start_date", "end_date")
+    return JsonResponse(list(trips), safe=False)
 
 from maps.models import Trip, Destination
 
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-@login_required
+
+
 def get_trips(request):
     trips = Trip.objects.filter(user=request.user)
     trips_data = []
@@ -150,26 +152,47 @@ def home(request):
 from django.http import JsonResponse
 from maps.models import Trip, Destination  # Assuming you have a Destination model
 
+import json
+import logging
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from maps.models import Trip, Destination
+
+logger = logging.getLogger(__name__)
+
 @login_required
 def save_stop(request):
-    if request.method == "POST":
+    print("save_stop function called") 
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request method"}, status=405)
+
+    try:
         data = json.loads(request.body)
-        print(f"Received data: {data}")  # Debug: Print received data
         trip_id = data.get("trip_id")
         stop_name = data.get("name")
         lat = data.get("lat")
         lng = data.get("lng")
-        print(f"Saving stop: {stop_name}, Lat: {lat}, Lng: {lng}")
 
         if not (trip_id and stop_name and lat and lng):
-            print("Invalid data")  # Debug: Print invalid data message
-            return JsonResponse({"error": "Invalid data"}, status=400)
+            logger.error("Missing required fields")
+            return JsonResponse({"error": "Missing required fields"}, status=400)
 
-        try:
-            trip = Trip.objects.get(id=trip_id, user=request.user)
-            trip.destinations.create(name=stop_name, latitude=lat, longitude=lng)
-            print(f"Stop saved: {stop_name}")  # Debug: Print saved stop
-            return JsonResponse({"success": True})
-        except Trip.DoesNotExist:
-            print("Trip not found")  # Debug: Print trip not found message
+        trip = Trip.objects.filter(id=trip_id, user=request.user).first()
+        if not trip:
+            logger.error(f"Trip with id {trip_id} not found for user {request.user}")
             return JsonResponse({"error": "Trip not found"}, status=404)
+
+        destination = Destination.objects.create(
+            trip=trip, name=stop_name, latitude=float(lat), longitude=float(lng)
+        )
+
+        logger.info(f"Destination '{destination.name}' added to trip '{trip.name}'")
+        return JsonResponse({"message": "Destination added", "id": destination.id}, status=201)
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON data received")
+        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    except Exception as e:
+        logger.exception(f"Error adding destination: {str(e)}")
+        return JsonResponse({"error": "Internal server error"}, status=500)
+        
