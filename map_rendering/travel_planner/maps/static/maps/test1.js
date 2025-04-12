@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("JS Loaded, initializing...");
 
-    try {
+    /*try {
         const userResponse = await fetch('/whoami/');
         const userData = await userResponse.json();
 
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     } catch (error) {
         console.error("Error fetching user:", error);
-    }
+    }*/
 
     init(); // Initialize the app
 });

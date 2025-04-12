@@ -1,5 +1,11 @@
 # ignore all .env files
-.env
+map_rendering/travel_planner/.env
 **/.env
-# Ignore the new_env folder
-new_env/
+
+
+map_rendering/travel_planner/maps/__pycache__/*
+map_rendering/travel_planner/maps/migrations/*
+map_rendering/travel_planner/debug.log
+map_rendering/travel_planner/db.sqlite3
+travel_planner/__pycache__/*
+map_rendering/env_wpp_project/**
