@@ -234,7 +234,7 @@ function updateMapMarkers() {
 
 async function fetchTrips() {
     try {
-        const response = await fetch('/trips/');
+        const response = await fetch('/api/get_trips/');
         const textData = await response.text();
         console.log("Raw API Response:", textData);
 
