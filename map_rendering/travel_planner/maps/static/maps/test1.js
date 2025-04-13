@@ -51,10 +51,12 @@ function setupEventListeners() {
     tripDetailsForm?.addEventListener("submit", handleTripFormSubmit);
     addDestinationBtn?.addEventListener("click", () => addDestination(false));
     addSubstopBtn?.addEventListener("click", () => addDestination(true));
-    destinationInput?.addEventListener("keydown", (e) => {
+    destinationInput?.addEventListener("keydown", (e) => { //changed to make sure function gets called once whethere key press or enter
         if (e.key === "Enter") {
             e.preventDefault();
-            addDestination(false);
+            if (document.activeElement !== addDestinationBtn) {
+                addDestination(false);
+            }
         }
     });
 }
@@ -102,18 +104,28 @@ function getCSRFToken() {
     return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
 }
 
+let addingDestination = false;
+
 async function addDestination(isSubStop) {
+    if (addingDestination) return;
+    addingDestination = true;
+
     const destinationName = destinationInput.value.trim();
-    if (!destinationName) return;
+    if (!destinationName) {
+        addingDestination = false;
+        return;
+    }
 
     if (destinations.some(dest => dest.name.toLowerCase() === destinationName.toLowerCase())) {
         alert("Destination already added!");
+        addingDestination = false;
         return;
     }
 
     const coordinates = await geocodeLocation(destinationName);
     if (!coordinates) {
         alert("Location not found!");
+        addingDestination = false;
         return;
     }
 
@@ -125,26 +137,26 @@ async function addDestination(isSubStop) {
                 "X-CSRFToken": getCSRFToken(),
             },
             body: JSON.stringify({
-                trip_id: currentTripId,
+                //trip_id: currentTripId,
                 name: destinationName,
                 lat: coordinates.lat,
                 lng: coordinates.lng,
             }),
         });
 
-        if (response.ok) {
-            console.log("Stop saved successfully!");
-        } else {
+        if (!response.ok) {
             console.error("Error saving stop:", await response.json());
         }
     } catch (error) {
         console.error("Error:", error);
     }
-
-    destinations.push({ id: generateId(), name: destinationName, lat: coordinates.lat, lng: coordinates.lng, isSubStop });
+    addingDestination = false;
+    destinations.push({ name: destinationName, lat: coordinates.lat, lng: coordinates.lng, isSubStop }); // removed id: generateId()
     destinationInput.value = "";
     renderDestinationsList();
     updateMapMarkers();
+
+    
 }
 
 async function geocodeLocation(locationName) {
@@ -216,9 +228,9 @@ function updateMapMarkers() {
     });
 }
 
-function generateId() {
+/*function generateId() {
     return Math.random().toString(36).substr(2, 9);
-}
+}*/
 
 async function fetchTrips() {
     try {

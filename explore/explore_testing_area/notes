@@ -1,0 +1,7 @@
+to fix:
+fix trip call to database
+fix double call of add stop
+
+done:
+
+to remove forbidden 403 error in save_stop- added csrf token exempt in views.py & removed login_required

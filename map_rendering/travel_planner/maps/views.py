@@ -167,18 +167,19 @@ def save_stop(request):
 
     try:
         data = json.loads(request.body)
-        trip_id = data.get("trip_id")
+        # trip_id = data.get("trip_id")
         stop_name = data.get("name")
         lat = data.get("lat")
         lng = data.get("lng")
+        # isSubstop = data.get("isSubstop")
 
-        if not (trip_id and stop_name and lat and lng):
+        if not (stop_name and lat and lng): # removed trip_id
             logger.error("Missing required fields")
             return JsonResponse({"error": "Missing required fields"}, status=400)
 
-        trip = Trip.objects.filter(id=trip_id, user=request.user).first()
+        trip = Trip.objects.filter(user=request.user).first()
         if not trip:
-            logger.error(f"Trip with id {trip_id} not found for user {request.user}")
+            logger.error(f"{request.user} not found {request.user}")
             return JsonResponse({"error": "Trip not found"}, status=404)
 
         destination = Destination.objects.create(
