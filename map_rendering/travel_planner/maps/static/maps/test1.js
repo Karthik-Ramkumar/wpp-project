@@ -191,11 +191,6 @@ function renderDestinationsList() {
     });
 }
 
-function removeDestination(id) {
-    destinations = destinations.filter((d) => d.id !== id);
-    renderDestinationsList();
-    updateMapMarkers();
-}
 
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
@@ -275,4 +270,10 @@ async function loadUserTrips(username) {
     } catch (error) {
         console.error("Error fetching trips:", error);
     }
+}
+
+function removeDestination(id) {
+    destinations = destinations.filter((d) => d.id !== id);
+    renderDestinationsList();
+    updateMapMarkers();
 }
