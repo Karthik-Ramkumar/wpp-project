@@ -159,6 +159,7 @@ async function addDestination(isSubStop) {
     });
     destinationInput.value = "";
     renderDestinationsList();
+    drawLineBetweenStops()
     updateMapMarkers();
     
 }
@@ -247,14 +248,13 @@ async function fetchTrips() {
             currentTripId = data.trips[0].id;
             tripName = data.trips[0].name;
             destinations = data.trips[0].destinations || [];
-
             renderDestinationsList();
+            drawLineBetweenStops()
             updateMapMarkers();
-
-            // Show stops on map
             
         }
-    } catch (error) {
+    } 
+    catch (error) {
         console.error("Error fetching trips:", error);
     }
     try {
@@ -301,5 +301,58 @@ function removeDestination(id) {
     renderDestinationsList();
     updateMapMarkers();
 }
+
+let routePath;
+
+function drawLineBetweenStops() {
+    if (!window.google || !window.google.maps || destinations.length < 2) return;
+
+    const pathCoordinates = destinations.map(dest => ({
+        lat: dest.lat,
+        lng: dest.lng
+    }));
+
+    if (routePath) {
+        routePath.setMap(null); // remove previous line
+    }
+
+    routePath = new google.maps.Polyline({
+        path: pathCoordinates,
+        geodesic: true,
+        strokeColor: "#0000FF",
+        strokeOpacity: 1.0,
+        strokeWeight: 4,
+    });
+
+    routePath.setMap(map);
+}
+/*function drawRouteBetweenStops() {
+    console.log(destinations)
+    if (!window.google || !window.google.maps || destinations.length < 2) return;
+
+    const directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: true });
+    directionsRenderer.setMap(map);
+
+    const waypoints = destinations.slice(1, -1).map(dest => ({
+        location: { lat: dest.lat, lng: dest.lng },
+        stopover: true,
+    }));
+
+    directionsService.route({
+        origin: { lat: destinations[0].lat, lng: destinations[0].lng },
+        destination: { lat: destinations[destinations.length - 1].lat, lng: destinations[destinations.length - 1].lng },
+        waypoints: waypoints,
+        travelMode: google.maps.TravelMode.DRIVING,
+    }, (response, status) => {
+        if (status === "OK") {
+            directionsRenderer.setDirections(response);
+        } else {
+            console.error("Directions request failed due to " + status);
+        }
+    });
+}*/
+
+
 
 
