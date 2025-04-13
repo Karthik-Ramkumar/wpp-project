@@ -152,10 +152,14 @@ async function addDestination(isSubStop) {
     }
     addingDestination = false;
     destinations.push({ name: destinationName, lat: coordinates.lat, lng: coordinates.lng, isSubStop }); // removed id: generateId()
+    new google.maps.Marker({
+        position: { lat: coordinates.lat, lng: coordinates.lng },
+        map: map,
+        title: destinationName
+    });
     destinationInput.value = "";
     renderDestinationsList();
     updateMapMarkers();
-
     
 }
 
@@ -226,7 +230,6 @@ function updateMapMarkers() {
 /*function generateId() {
     return Math.random().toString(36).substr(2, 9);
 }*/
-
 async function fetchTrips() {
     try {
         const response = await fetch('/api/get_trips/');
@@ -247,11 +250,32 @@ async function fetchTrips() {
 
             renderDestinationsList();
             updateMapMarkers();
+
+            // Show stops on map
+            
+        }
+    } catch (error) {
+        console.error("Error fetching trips:", error);
+    }
+    try {
+        const response = await fetch('/api/get_trips/');
+        const data = await response.json();
+
+        if (data.trips.length > 0) {
+            const stops = data.trips[0].destinations;
+            stops.forEach(stop => {
+                new google.maps.Marker({
+                    position: { lat: stop.lat, lng: stop.lng },
+                    map: map,
+                    title: stop.name
+                });
+            });
         }
     } catch (error) {
         console.error("Error fetching trips:", error);
     }
 }
+
 
 async function loadUserTrips(username) {
     try {
@@ -277,3 +301,5 @@ function removeDestination(id) {
     renderDestinationsList();
     updateMapMarkers();
 }
+
+
