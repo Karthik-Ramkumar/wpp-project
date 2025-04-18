@@ -302,57 +302,57 @@ function removeDestination(id) {
     updateMapMarkers();
 }
 
-let routePath;
+let routePath = [];
+const colorPalette = [
+    '#00BFFF', // Vibrant Blue
+    '#FF6F61', // Soft Coral
+    '#32CD32', // Bright Green
+    '#FFD700', // Golden Yellow
+    '#8A2BE2', // Electric Purple
+    '##FF5C00', // Neon Orange
+    '#40E0D0', // Turquoise
+    '##000000', // Black
+    '#87CEEB', // Sky Blue
+    '#FF1493'  // Neon Pink
+];
 
 function drawLineBetweenStops() {
     if (!window.google || !window.google.maps || destinations.length < 2) return;
 
-    const pathCoordinates = destinations.map(dest => ({
-        lat: dest.lat,
-        lng: dest.lng
-    }));
-
-    if (routePath) {
-        routePath.setMap(null); // remove previous line
+    // Clear previous lines if any
+    if (routePath.length > 0) {
+        routePath.forEach(path => path.setMap(null));
     }
 
-    routePath = new google.maps.Polyline({
-        path: pathCoordinates,
-        geodesic: true,
-        strokeColor: "#0000FF",
-        strokeOpacity: 1.0,
-        strokeWeight: 4,
-    });
+    routePath = []; // Reset routePath array
 
-    routePath.setMap(map);
+    // Loop through each pair of stops to create different colored dotted lines
+    for (let i = 0; i < destinations.length - 1; i++) {
+        const pathCoordinates = [
+            { lat: destinations[i].lat, lng: destinations[i].lng },
+            { lat: destinations[i + 1].lat, lng: destinations[i + 1].lng }
+        ];
+
+        const polyline = new google.maps.Polyline({
+            path: pathCoordinates,
+            geodesic: true,
+            strokeColor: colorPalette[i % colorPalette.length], // Choose a color from the palette
+            strokeOpacity: 1.0,
+            strokeWeight: 4,
+            icons: [{
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 3,
+                    strokeColor: colorPalette[i % colorPalette.length], // Dotted line color
+                    strokeOpacity: 1,
+                    fillOpacity: 0
+                },
+                offset: "0",
+                repeat: "15px" // Adjust the spacing of the dots
+            }]
+        });
+
+        polyline.setMap(map);
+        routePath.push(polyline); // Store the polyline for future removal
+    }
 }
-/*function drawRouteBetweenStops() {
-    console.log(destinations)
-    if (!window.google || !window.google.maps || destinations.length < 2) return;
-
-    const directionsService = new google.maps.DirectionsService();
-    const directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: true });
-    directionsRenderer.setMap(map);
-
-    const waypoints = destinations.slice(1, -1).map(dest => ({
-        location: { lat: dest.lat, lng: dest.lng },
-        stopover: true,
-    }));
-
-    directionsService.route({
-        origin: { lat: destinations[0].lat, lng: destinations[0].lng },
-        destination: { lat: destinations[destinations.length - 1].lat, lng: destinations[destinations.length - 1].lng },
-        waypoints: waypoints,
-        travelMode: google.maps.TravelMode.DRIVING,
-    }, (response, status) => {
-        if (status === "OK") {
-            directionsRenderer.setDirections(response);
-        } else {
-            console.error("Directions request failed due to " + status);
-        }
-    });
-}*/
-
-
-
-
