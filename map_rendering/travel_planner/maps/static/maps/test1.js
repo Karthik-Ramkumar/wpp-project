@@ -302,19 +302,25 @@ function removeDestination(id) {
     updateMapMarkers();
 }
 
+
 let routePath = [];
 const colorPalette = [
-    '#00BFFF', // Vibrant Blue
-    '#FF6F61', // Soft Coral
-    '#32CD32', // Bright Green
-    '#FFD700', // Golden Yellow
-    '#8A2BE2', // Electric Purple
-    '##FF5C00', // Neon Orange
-    '#40E0D0', // Turquoise
-    '##000000', // Black
-    '#87CEEB', // Sky Blue
-    '#FF1493'  // Neon Pink
+    '#00BFFF', '#FF6F61', '#32CD32', '#FFD700', '#8A2BE2',
+    '#FF5C00', '#40E0D0', '#000000', '#87CEEB', '#FF1493'
 ];
+
+// Function to calculate distance between two coordinates using Haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius of the Earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return distance;
+}
 
 function drawLineBetweenStops() {
     if (!window.google || !window.google.maps || destinations.length < 2) return;
@@ -328,9 +334,17 @@ function drawLineBetweenStops() {
 
     // Loop through each pair of stops to create different colored dotted lines
     for (let i = 0; i < destinations.length - 1; i++) {
+        const startLat = destinations[i].lat;
+        const startLng = destinations[i].lng;
+        const endLat = destinations[i + 1].lat;
+        const endLng = destinations[i + 1].lng;
+
+        // Calculate distance
+        const distance = calculateDistance(startLat, startLng, endLat, endLng).toFixed(2); // Distance in km, rounded to 2 decimal places
+
         const pathCoordinates = [
-            { lat: destinations[i].lat, lng: destinations[i].lng },
-            { lat: destinations[i + 1].lat, lng: destinations[i + 1].lng }
+            { lat: startLat, lng: startLng },
+            { lat: endLat, lng: endLng }
         ];
 
         const polyline = new google.maps.Polyline({
@@ -354,5 +368,24 @@ function drawLineBetweenStops() {
 
         polyline.setMap(map);
         routePath.push(polyline); // Store the polyline for future removal
+
+        // Add a label showing the distance
+        const labelLat = (startLat + endLat) / 2; // Midpoint of the line
+        const labelLng = (startLng + endLng) / 2;
+
+        const distanceLabel = new google.maps.Marker({
+            position: { lat: labelLat, lng: labelLng },
+            map: map,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 0,  // Hide the marker itself
+            },
+            label: {
+                text: `${distance} km`,
+                color: "#000000",
+                fontSize: "14px",
+                fontWeight: "bold"
+            }
+        });
     }
 }
