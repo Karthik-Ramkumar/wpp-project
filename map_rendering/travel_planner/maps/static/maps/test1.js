@@ -302,7 +302,6 @@ function removeDestination(id) {
     updateMapMarkers();
 }
 
-
 let routePath = [];
 const colorPalette = [
     '#00BFFF', '#FF6F61', '#32CD32', '#FFD700', '#8A2BE2',
