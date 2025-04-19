@@ -180,22 +180,6 @@ async function geocodeLocation(locationName) {
     return null;
 }
 
-function renderDestinationsList() {
-    if (!destinationsList) return;
-
-    destinationsList.innerHTML = "";
-    destinations.forEach((dest) => {
-        const destEl = document.createElement("div");
-        destEl.className = `destination-item ${dest.isSubStop ? "sub" : "main"}`;
-        destEl.innerHTML = `<span>${dest.name}</span><button class="remove-btn" data-id="${dest.id}">X</button>`;
-        destinationsList.appendChild(destEl);
-    });
-
-    document.querySelectorAll(".remove-btn").forEach((btn) => {
-        btn.addEventListener("click", () => removeDestination(btn.getAttribute("data-id")));
-    });
-}
-
 
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
@@ -387,4 +371,78 @@ function drawLineBetweenStops() {
             }
         });
     }
+}
+
+document.querySelectorAll('.delete-stop').forEach(button => {
+    button.addEventListener('click', function () {
+        const stopName = this.getAttribute('data-stop');
+        
+        fetch('/delete_stop/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ stop_name: stopName })  // Ensure this matches Python
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();  // Reload the page on success
+            } else {
+                alert('Failed to delete stop');
+            }
+        });
+    });
+});
+
+// CSRF token helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+function deleteStop(stopName) {
+    fetch('/delete_stop/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ stop: stopName })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        location.reload();
+      } else {
+        alert('Failed to delete stop');
+      }
+    });
+  }
+  function renderDestinationsList() {
+    if (!destinationsList) return;
+
+    destinationsList.innerHTML = "";
+    destinations.forEach((dest) => {
+        const destEl = document.createElement("div");
+        destEl.className = `destination-item ${dest.isSubStop ? "sub" : "main"}`;
+        destEl.innerHTML = `<span>${dest.name}</span><button class="remove-btn" data-id="${dest.id}">X</button>`;
+        destinationsList.appendChild(destEl);
+    });
+
+    document.querySelectorAll(".remove-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const stopName = btn.closest(".destination-item").querySelector("span").textContent;
+            deleteStop(stopName);  // Call deleteStop with the stop name
+        });
+    });
 }

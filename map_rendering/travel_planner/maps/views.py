@@ -83,7 +83,7 @@ from django.http import JsonResponse
 # from django.contrib.auth.decorators import login_required
 
 
-def get_trips(request):
+def get_trips(request): # this is get stops
     trips = Trip.objects.filter(user=request.user)
     trips_data = []
     for trip in trips:
@@ -188,11 +188,29 @@ def save_stop(request):
 
         logger.info(f"Destination '{destination.name}' added to trip '{trip.name}'")
         return JsonResponse({"message": "Destination added", "id": destination.id}, status=201)
-
     except json.JSONDecodeError:
         logger.error("Invalid JSON data received")
         return JsonResponse({"error": "Invalid JSON data"}, status=400)
     except Exception as e:
         logger.exception(f"Error adding destination: {str(e)}")
         return JsonResponse({"error": "Internal server error"}, status=500)
-        
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+def delete_stop(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        stop_name = data.get('stop')  # Ensure this matches the JS key
+
+        if stop_name:
+            # replace this with your model and logic
+            from .models import Destination  # or your model name
+            # Assuming the field is `name` in the `Destination` model
+            Destination.objects.filter(name=stop_name).delete()  # Use correct field name
+            return JsonResponse({'status': 'success'})
+
+    return JsonResponse({'status': 'error'}, status=400)

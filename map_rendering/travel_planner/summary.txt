@@ -1,0 +1,13 @@
+Trip Summary: trip1
+Start Date: 2025-03-25
+End Date: 2025-03-27
+
+Destinations:
+1. chennai - Lat: 13.0843007, Lng: 80.2704622
+2. bangalore - Lat: 12.9715987, Lng: 77.5945627
+3. goa - Lat: 15.2993265, Lng: 74.12399599999999
+4. mumbai - Lat: 19.0759837, Lng: 72.8776559
+5. surat - Lat: 21.1702401, Lng: 72.83106070000001
+6. jaipur - Lat: 26.9124336, Lng: 75.7872709
+7. delhi - Lat: 28.7040592, Lng: 77.10249019999999
+8. lucknow - Lat: 26.8466937, Lng: 80.94616599999999
