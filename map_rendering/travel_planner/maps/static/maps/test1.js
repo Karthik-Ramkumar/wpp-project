@@ -193,9 +193,11 @@ function updateMapMarkers() {
         console.error("Map not initialized!");
         return;
     }
-
-    markers.forEach(marker => marker.setMap(null)); // Clear old markers
-    markers = [];
+    
+    for (let i = 0; i < markers.length; i++) {
+        markers[i].setMap(null);
+    }
+    markers.length = 0;
 
     destinations.forEach(dest => {
         if (!dest.lat || !dest.lng || isNaN(dest.lat) || isNaN(dest.lng)) {
@@ -203,11 +205,12 @@ function updateMapMarkers() {
             return;
         }
 
-        new google.maps.marker.AdvancedMarkerElement({
+        const marker = new google.maps.Marker({
             position: { lat: parseFloat(dest.lat), lng: parseFloat(dest.lng) },
             map: map,
+            title: dest.name
         });
-
+        
         markers.push(marker);
     });
 }
@@ -233,7 +236,8 @@ async function fetchTrips() {
             tripName = data.trips[0].name;
             destinations = data.trips[0].destinations || [];
             renderDestinationsList();
-            drawLineBetweenStops()
+            drawLineBetweenStops();
+            console.log(destinations);
             updateMapMarkers();
             
         }
@@ -280,11 +284,30 @@ async function loadUserTrips(username) {
     }
 }
 
-function removeDestination(id) {
+function renderDestinationsList() {
+    if (!destinationsList) return;
+
+    destinationsList.innerHTML = "";
+    destinations.forEach((dest) => {
+        const destEl = document.createElement("div");
+        destEl.className = `destination-item ${dest.isSubStop ? "sub" : "main"}`;
+        destEl.innerHTML = `<span>${dest.name}</span><button class="remove-btn" data-id="${dest.id}">X</button>`;
+        destinationsList.appendChild(destEl);
+    });
+
+    document.querySelectorAll(".remove-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const stopName = btn.closest(".destination-item").querySelector("span").textContent;
+            deleteStop(stopName); 
+        });
+    });
+}
+
+/*function removeDestination(id) {
     destinations = destinations.filter((d) => d.id !== id);
     renderDestinationsList();
     updateMapMarkers();
-}
+}*/
 
 let routePath = [];
 const colorPalette = [
@@ -374,7 +397,9 @@ function drawLineBetweenStops() {
 }
 
 document.querySelectorAll('.delete-stop').forEach(button => {
-    button.addEventListener('click', function () {
+    button.addEventListener('click', function (event) {
+        event.preventDefault();  // Prevent the default behavior (page reload)
+        
         const stopName = this.getAttribute('data-stop');
         
         fetch('/delete_stop/', {
@@ -388,10 +413,20 @@ document.querySelectorAll('.delete-stop').forEach(button => {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                location.reload();  // Reload the page on success
+                // Find and remove the stop from the DOM
+                const stopElement = this.closest('.stop-item'); // Assuming the stop is wrapped in an element with a class 'stop-item'
+                if (stopElement) {
+                    stopElement.remove();
+                    updateMapMarkers(); 
+                }
+                
             } else {
                 alert('Failed to delete stop');
             }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            alert('Something went wrong');
         });
     });
 });
@@ -422,27 +457,9 @@ function deleteStop(stopName) {
     .then(response => response.json())
     .then(data => {
       if (data.status === 'success') {
-        location.reload();
+        fetchTrips().then(updateMapMarkers);
       } else {
         alert('Failed to delete stop');
       }
-    });
+    });    
   }
-  function renderDestinationsList() {
-    if (!destinationsList) return;
-
-    destinationsList.innerHTML = "";
-    destinations.forEach((dest) => {
-        const destEl = document.createElement("div");
-        destEl.className = `destination-item ${dest.isSubStop ? "sub" : "main"}`;
-        destEl.innerHTML = `<span>${dest.name}</span><button class="remove-btn" data-id="${dest.id}">X</button>`;
-        destinationsList.appendChild(destEl);
-    });
-
-    document.querySelectorAll(".remove-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-            const stopName = btn.closest(".destination-item").querySelector("span").textContent;
-            deleteStop(stopName);  // Call deleteStop with the stop name
-        });
-    });
-}

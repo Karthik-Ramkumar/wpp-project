@@ -8,13 +8,18 @@ from dotenv import load_dotenv # type: ignore
 from django.utils.safestring import mark_safe # type: ignore
 import json
 from maps.models import Trip
-# from django.contrib.auth.models import User # type: ignore
 load_dotenv()
+from .models import Trip # type: ignore
+from django.shortcuts import render, get_object_or_404 # type: ignore
+from django.shortcuts import render # type: ignore
+from maps.models import Trip, Destination
+from maps.models import Trip, Destination  # Assuming you have a Destination model
+import logging
+from django.shortcuts import redirect # type: ignore
+from django.views.decorators.csrf import csrf_exempt # type: ignore
 
 API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")  # Hardcoded API Key
 
-
-# from django.contrib.auth.decorators import login_required
 
 # @login_required
 def map_view(request):
@@ -34,7 +39,6 @@ def map_view(request):
         "api_key": API_KEY
     })
 
-
 def geocode_location(request):
     place = request.GET.get("place")
     if not place:
@@ -49,15 +53,9 @@ def geocode_location(request):
 
     return JsonResponse({"error": "Location not found"}, status=404)
 
-from django.http import JsonResponse # type: ignore
-import os
-
 def get_google_maps_api_key(request):
     return JsonResponse({"GOOGLE_MAPS_API_KEY": os.getenv("GOOGLE_MAPS_API_KEY")})
 
-from django.shortcuts import render, get_object_or_404 # type: ignore
-from .models import Trip # type: ignore
-# from django.contrib.auth.models import User # type: ignore
 
 def get_user():
     karthik1, created = User.objects.get_or_create(username="karthik1")
@@ -68,20 +66,12 @@ def user_dashboard(request):
     trips = Trip.objects.filter(user=request.user) 
     return render(request, "dashboard.html", {"trips": trips})
 
-from django.shortcuts import render # type: ignore
-from maps.models import Trip
-# from django.contrib.auth.decorators import login_required # type: ignore
+
 
 # @login_required
 def trip_list(request):
     trips = Trip.objects.all().values("name", "start_date", "end_date")
     return JsonResponse(list(trips), safe=False)
-
-from maps.models import Trip, Destination
-
-from django.http import JsonResponse
-# from django.contrib.auth.decorators import login_required
-
 
 def get_trips(request): # this is get stops
     trips = Trip.objects.filter(user=request.user)
@@ -105,34 +95,11 @@ def get_trips(request): # this is get stops
         })
     return JsonResponse({"trips": trips_data})
 
-from django.shortcuts import redirect # type: ignore
-# from django.contrib.auth import login # type: ignore
-# from django.contrib.auth.models import User # type: ignore
-
-'''def auto_login(request):
-    user = User.objects.get(username="karthik1")
-    user.backend = 'django.contrib.auth.backends.ModelBackend'  # Set backend manually
-    login(request, user)  # Log the user in
-    return redirect('/')  # Redirect to the home page'''
-
-
-'''def whoami(request):
-    if request.user.is_authenticated:
-        return JsonResponse({"username": request.user.username})
-    return JsonResponse({"error": "Not logged in"}, status=401)'''
-
-from django.http import JsonResponse # type: ignore
-# from django.contrib.auth.decorators import login_required # type: ignore
-from .models import Trip
-
 # @login_required
 def user_trips(request):
     trips = Trip.objects.filter(user=request.user).values()
     return JsonResponse(list(trips), safe=False)
 
-from django.shortcuts import render # type: ignore
-# from django.contrib.auth.decorators import login_required # type: ignore
-from .models import Trip
 
 # @login_required
 def home(request):
@@ -146,19 +113,9 @@ def home(request):
 
     return render(request, "index.html", {"latest_trip": latest_trip})
 
-from django.http import JsonResponse
-from maps.models import Trip, Destination  # Assuming you have a Destination model
-
-import json
-import logging
-from django.http import JsonResponse
-# from django.contrib.auth.decorators import login_required
-from maps.models import Trip, Destination
 
 logger = logging.getLogger(__name__)
-
 # @login_required
-from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def save_stop(request):
     logger.debug("save_stop function called") 
@@ -195,11 +152,6 @@ def save_stop(request):
         logger.exception(f"Error adding destination: {str(e)}")
         return JsonResponse({"error": "Internal server error"}, status=500)
 
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-
 @csrf_exempt
 def delete_stop(request):
     if request.method == 'POST':
@@ -214,3 +166,15 @@ def delete_stop(request):
             return JsonResponse({'status': 'success'})
 
     return JsonResponse({'status': 'error'}, status=400)
+
+'''def auto_login(request):
+    user = User.objects.get(username="karthik1")
+    user.backend = 'django.contrib.auth.backends.ModelBackend'  # Set backend manually
+    login(request, user)  # Log the user in
+    return redirect('/')  # Redirect to the home page'''
+
+
+'''def whoami(request):
+    if request.user.is_authenticated:
+        return JsonResponse({"username": request.user.username})
+    return JsonResponse({"error": "Not logged in"}, status=401)'''
