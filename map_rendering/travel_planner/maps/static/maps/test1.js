@@ -180,6 +180,24 @@ async function geocodeLocation(locationName) {
     return null;
 }
 
+function renderDestinationsList() {
+    if (!destinationsList) return;
+
+    destinationsList.innerHTML = "";
+    destinations.forEach((dest) => {
+        const destEl = document.createElement("div");
+        destEl.className = `destination-item ${dest.isSubStop ? "sub" : "main"}`;
+        destEl.innerHTML = `<span>${dest.name}</span><button class="remove-btn" data-id="${dest.id}">X</button>`;
+        destinationsList.appendChild(destEl);
+    });
+
+    document.querySelectorAll(".remove-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const stopName = btn.closest(".destination-item").querySelector("span").textContent;
+            deleteStop(stopName);  // Call deleteStop with the stop name
+        });
+    });
+}
 
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
@@ -193,11 +211,9 @@ function updateMapMarkers() {
         console.error("Map not initialized!");
         return;
     }
-    
-    for (let i = 0; i < markers.length; i++) {
-        markers[i].setMap(null);
-    }
-    markers.length = 0;
+
+    markers.forEach(marker => marker.setMap(null)); // Clear old markers
+    markers = [];
 
     destinations.forEach(dest => {
         if (!dest.lat || !dest.lng || isNaN(dest.lat) || isNaN(dest.lng)) {
@@ -205,12 +221,11 @@ function updateMapMarkers() {
             return;
         }
 
-        const marker = new google.maps.Marker({
+        new google.maps.marker.AdvancedMarkerElement({
             position: { lat: parseFloat(dest.lat), lng: parseFloat(dest.lng) },
             map: map,
-            title: dest.name
         });
-        
+
         markers.push(marker);
     });
 }
@@ -236,8 +251,7 @@ async function fetchTrips() {
             tripName = data.trips[0].name;
             destinations = data.trips[0].destinations || [];
             renderDestinationsList();
-            drawLineBetweenStops();
-            console.log(destinations);
+            drawLineBetweenStops()
             updateMapMarkers();
             
         }
@@ -284,30 +298,11 @@ async function loadUserTrips(username) {
     }
 }
 
-function renderDestinationsList() {
-    if (!destinationsList) return;
-
-    destinationsList.innerHTML = "";
-    destinations.forEach((dest) => {
-        const destEl = document.createElement("div");
-        destEl.className = `destination-item ${dest.isSubStop ? "sub" : "main"}`;
-        destEl.innerHTML = `<span>${dest.name}</span><button class="remove-btn" data-id="${dest.id}">X</button>`;
-        destinationsList.appendChild(destEl);
-    });
-
-    document.querySelectorAll(".remove-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-            const stopName = btn.closest(".destination-item").querySelector("span").textContent;
-            deleteStop(stopName); 
-        });
-    });
-}
-
-/*function removeDestination(id) {
+function removeDestination(id) {
     destinations = destinations.filter((d) => d.id !== id);
     renderDestinationsList();
     updateMapMarkers();
-}*/
+}
 
 let routePath = [];
 const colorPalette = [
@@ -397,9 +392,7 @@ function drawLineBetweenStops() {
 }
 
 document.querySelectorAll('.delete-stop').forEach(button => {
-    button.addEventListener('click', function (event) {
-        event.preventDefault();  // Prevent the default behavior (page reload)
-        
+    button.addEventListener('click', function () {
         const stopName = this.getAttribute('data-stop');
         
         fetch('/delete_stop/', {
@@ -413,20 +406,10 @@ document.querySelectorAll('.delete-stop').forEach(button => {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Find and remove the stop from the DOM
-                const stopElement = this.closest('.stop-item'); // Assuming the stop is wrapped in an element with a class 'stop-item'
-                if (stopElement) {
-                    stopElement.remove();
-                    updateMapMarkers(); 
-                }
-                
+                location.reload();  // Reload the page on success
             } else {
                 alert('Failed to delete stop');
             }
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            alert('Something went wrong');
         });
     });
 });
@@ -457,9 +440,11 @@ function deleteStop(stopName) {
     .then(response => response.json())
     .then(data => {
       if (data.status === 'success') {
-        fetchTrips().then(updateMapMarkers);
+        initMap();
+        fetchTrips();
+        updateMapMarkers();
       } else {
         alert('Failed to delete stop');
       }
-    });    
+    });
   }
