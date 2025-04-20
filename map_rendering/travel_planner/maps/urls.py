@@ -20,4 +20,5 @@ urlpatterns = [
     path('api/get_trips/', get_trips, name='get_trips'),
     path("save_stop/", views.save_stop, name="save_stop"),
     path('delete_stop/', views.delete_stop, name='delete_stop'),
+    path('save-trip/', views.write_summary, name='save_trip'),
 ]
