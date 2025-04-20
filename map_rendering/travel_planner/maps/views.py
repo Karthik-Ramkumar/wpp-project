@@ -167,6 +167,40 @@ def delete_stop(request):
 
     return JsonResponse({'status': 'error'}, status=400)
 
+from django.http import HttpResponse # type: ignore
+from .models import Trip, Destination
+
+def write_summary(request):
+    trip = Trip.objects.get(name="trip1")  # or get current trip logic
+    destinations = Destination.objects.filter(trip=trip)
+
+    with open("summary.txt", "w") as f:
+        f.write("="*70 + "\n")
+        f.write(f"{'🌎 Your Ultimate Trip Summary':^70}\n")
+        f.write("="*70 + "\n\n")
+
+        f.write(f"🏷️  **Trip Name**        : {trip.name}\n")
+        f.write(f"📅  **Start Date**       : {trip.start_date.strftime('%B %d, %Y')}\n")
+        f.write(f"🏁  **End Date**         : {trip.end_date.strftime('%B %d, %Y')}\n\n")
+        
+        f.write("-" * 70 + "\n")
+        f.write(f"{'🌍  Destinations Overview':^70}\n")
+        f.write("-" * 70 + "\n\n")
+
+        for i, dest in enumerate(destinations, start=1):
+            f.write(f"{i}. {dest.name.title():<25} | Latitude: {dest.latitude:<15} | Longitude: {dest.longitude}\n")
+        
+        f.write("\n" + "-" * 70 + "\n")
+        f.write(f"✈️  **Total Stops**      : {len(destinations)}\n")
+        f.write(f"💼  **Trip Duration**    : {trip.start_date.strftime('%B %d, %Y')} to {trip.end_date.strftime('%B %d, %Y')}\n")
+        
+        f.write("\n" + "="*70 + "\n")
+        f.write(f"🌟 **Have a great trip!** 🌟\n")
+        f.write(f"📸 Don’t forget to capture memories at each stop!\n")
+        f.write("="*70 + "\n")
+
+    return HttpResponse("Summary written to summary.txt")
+
 '''def auto_login(request):
     user = User.objects.get(username="karthik1")
     user.backend = 'django.contrib.auth.backends.ModelBackend'  # Set backend manually
