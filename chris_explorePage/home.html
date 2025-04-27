@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jaini:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    <style>
+        /* CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #007bff;
+            --secondary: #f2b50d;
+            --text: #333;
+            --background: #fff;
+            --card: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            /* Variable for dynamic background image */
+            --bg-image-url: none;
+        }
+
+        [data-theme="dark"] {
+            --text: #eee;
+            --background: #121212;
+            --card: #1e1e1e;
+            --shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--background);
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 80px; /* Base padding to clear fixed navbar */
+        }
+
+        /* --- START: Navigation Bar Styles (UNCHANGED) --- */
+        .navbar {
+            background-color: var(--card);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-logo {
+            font-family: "Jaini", system-ui;
+            font-size: 2.7rem;
+            font-weight: 700;
+            color: #f2b50d;
+            text-shadow: 2px 2px 5px rgba(132, 91, 20, 0.5);
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-item {
+            margin-left: 1.5rem;
+            position: relative;
+        }
+
+        .nav-item a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: var(--transition);
+            padding: 0.5rem 0;
+            display: block;
+        }
+
+        .nav-item a:hover {
+            color: var(--secondary);
+        }
+
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--secondary);
+            transition: var(--transition);
+        }
+
+        .nav-item:hover::after {
+            width: 100%;
+        }
+
+        .nav-theme-toggle {
+            display: flex;
+        }
+
+        #themeToggle {
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+        }
+
+        #themeToggle i {
+            margin-right: 0.5rem;
+            display: none; /* Icons hidden by default */
+        }
+
+        /* Show moon icon in light mode */
+        #themeToggle i.fa-moon {
+            display: inline-block;
+        }
+
+        /* Hide moon icon and show sun icon in dark mode */
+        [data-theme="dark"] #themeToggle i.fa-moon {
+            display: none;
+        }
+        [data-theme="dark"] #themeToggle i.fa-sun {
+            display: inline-block;
+        }
+
+
+        #themeToggle span {
+            font-weight: 500;
+        }
+
+        .nav-cta a {
+            background-color: var(--secondary);
+            color: #121212; /* Ensure text is readable on yellow */
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .nav-cta a:hover {
+            background-color: #e5a708;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.5rem;
+            gap: 0.3rem;
+        }
+
+        .bar {
+            width: 25px;
+            height: 3px;
+            background-color: var(--text);
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        .hamburger.active .bar:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        .hamburger.active .bar:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active .bar:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                flex-direction: column;
+                position: fixed; /* Changed from absolute to fixed */
+                top: 70px; /* Adjust based on actual navbar height */
+                right: 0;
+                background-color: var(--card);
+                width: 100%;
+                text-align: center;
+                box-shadow: var(--shadow);
+                border-radius: 0 0 0.5rem 0.5rem; /* Rounded bottom corners */
+                overflow: hidden;
+                transition: max-height 0.4s ease-in-out; /* Smoother transition */
+                max-height: 0;
+            }
+
+            .nav-menu.active {
+                display: flex;
+                max-height: 500px; /* Allow enough height for items */
+            }
+
+            .nav-item {
+                margin: 0;
+                padding: 0; /* Remove padding here */
+                border-bottom: 1px solid rgba(0,0,0,0.1); /* Separator */
+            }
+             [data-theme="dark"] .nav-item {
+                 border-bottom: 1px solid rgba(255,255,255,0.1); /* Separator for dark mode */
+             }
+             .nav-item:last-child {
+                 border-bottom: none; /* No border for last item */
+             }
+
+            .nav-item a {
+                padding: 1rem; /* Add padding back to the link */
+                display: block; /* Ensure link takes full width */
+            }
+
+            .nav-cta {
+                margin-top: 0; /* Remove top margin */
+                margin-left: 0;
+                padding: 1rem; /* Consistent padding */
+            }
+             .nav-cta a {
+                 display: inline-block; /* Make button behave better */
+             }
+
+            .hamburger {
+                display: flex;
+            }
+        }
+        /* --- END: Navigation Bar Styles (UNCHANGED) --- */
+
+
+        /* --- START: Main Content Styles (MODIFIED H1 POSITION) --- */
+        .main-content {
+            padding-bottom: 50px;
+            min-height: calc(100vh - 80px); /* Adjusted height calculation */
+            position: relative; /* Needed for the pseudo-element */
+            overflow: hidden; /* Contain the blurred background */
+            z-index: 1; /* Ensure content stays above pseudo-element */
+        }
+
+        /* Blurred Background Pseudo-element */
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: var(--bg-image-url); /* Use CSS variable */
+            background-size: cover;
+            background-position: center;
+            filter: blur(10px) brightness(0.8); /* Adjust blur and brightness */
+            opacity: 0; /* Start hidden */
+            z-index: -1; /* Place behind the content */
+            transition: opacity 0.8s ease-in-out; /* Fade transition for background */
+        }
+
+        /* Style to fade in the background when image is set */
+        .main-content.has-background::before {
+            opacity: 1;
+        }
+
+        /* ---- H1 STYLE MODIFIED FOR POSITION & VISIBILITY ---- */
+        .main-content h1 {
+            text-align: center;
+            /* Added margin-top to push the heading down */
+            margin-top: 1.5rem; /* Adjust this value (e.g., 1rem, 2rem, 30px) as needed */
+            margin-bottom: 25px; /* Slightly increased bottom margin too */
+            color: var(--secondary);
+            /* Stronger text shadow from previous fix */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8),
+                         0 0 6px rgba(0, 0, 0, 0.6);
+            z-index: 2; /* Ensure title is above background */
+            position: relative; /* Needed for z-index */
+        }
+
+
+        .main-content p {
+            margin-bottom: 15px;
+        }
+
+        #trending-destinations {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            position: relative; /* Ensure buttons are above background */
+            z-index: 2;
+        }
+
+        .destination-item {
+            background-color: var(--secondary);
+            color: #121212; /* Ensure contrast */
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            flex: 0 0 auto;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .destination-item:hover {
+            background-color: #e5a708;
+            transform: translateY(-2px); /* Subtle lift effect */
+        }
+         .destination-item:active {
+             transform: translateY(0px); /* Press down effect */
+         }
+
+        #destination-details {
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Lighter border for dark card */
+            padding: 25px; /* Increased padding */
+            border-radius: 12px; /* More rounded corners */
+            background-color: rgba(30, 30, 30, 0.85); /* Semi-transparent dark background */
+            backdrop-filter: blur(5px); /* Blur background behind card */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: none; /* Initially hidden via CSS */
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px; /* Increased gap */
+            color: #fff; /* Ensure text is white on dark background */
+            position: relative; /* Ensure details are above main background */
+            z-index: 2;
+
+            /* Animation styles */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        /* Style for when the details are visible */
+        #destination-details.visible {
+            display: flex; /* Use flex when visible */
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        #details-content {
+            flex: 1;
+            margin-right: 0;
+        }
+
+        .details-image {
+            flex: 0 0 auto;
+            width: 100%; /* Full width on small screens */
+            max-width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9; /* Widescreen aspect ratio */
+            object-fit: cover;
+            border-radius: 8px; /* Rounded image corners */
+            border: 2px solid var(--secondary); /* Highlight border */
+        }
+
+        @media (min-width: 768px) {
+             #destination-details {
+                 flex-direction: row; /* Row layout on larger screens */
+             }
+             #details-content {
+                 margin-right: 20px; /* Add margin back on larger screens */
+                 margin-bottom: 0; /* Remove bottom margin */
+             }
+            .details-image {
+                 max-width: 45%; /* Image takes up less space */
+                 width: 45%;
+             }
+        }
+
+        #destination-details h2 { /* This h2 seems unused, hiding */
+             display: none;
+        }
+         #destination-details h3 { /* Style for the actual title */
+             margin-top: 0;
+             margin-bottom: 10px;
+             color: var(--secondary);
+             font-size: 1.8em;
+         }
+
+        .photo-preview-section { /* Unused, hiding */
+             display: none;
+        }
+
+        .rating-stars {
+            color: gold;
+            font-size: 1.2em;
+        }
+
+        .top-places-list {
+            margin-top: 10px; /* Increased margin */
+            padding-left: 20px;
+        }
+
+        .top-places-list li {
+            margin-bottom: 5px; /* Increased spacing */
+            color: #eee; /* Lighter color for list items */
+        }
+        /* --- END: Main Content Styles --- */
+
+
+        /* Footer Styles (UNCHANGED) */
+        .footer {
+            display: none; /* Keep hidden as per original code */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">आराध्य</div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#">Home</a></li>
+                <li class="nav-item"><a href="#">Destinations</a></li>
+                <li class="nav-item"><a href="#">Tours</a></li>
+                <li class="nav-item"><a href="#">About</a></li>
+                <li class="nav-item"><a href="#">Contact</a></li>
+                <li class="nav-item nav-theme-toggle">
+                    <button id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                        <i class="fas fa-sun"></i>
+                        <span class="theme-text">Dark Mode</span>
+                    </button>
+                </li>
+                <li class="nav-item nav-cta"><a href="#">Sign In</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+    <main class="main-content">
+        <div class="container">
+            <h1>Prime Tourist Destinations in India</h1>
+
+            <div id="trending-destinations">
+                <div class="destination-item" data-place-name="Kerala, India">Kerala</div>
+                <div class="destination-item" data-place-name="Goa, India">Goa</div>
+                <div class="destination-item" data-place-name="Rajasthan, India">Rajasthan</div>
+                <div class="destination-item" data-place-name="Himachal Pradesh, India">Himachal Pradesh</div>
+                <div class="destination-item" data-place-name="Uttarakhand, India">Uttarakhand</div>
+                <div class="destination-item" data-place-name="Tamil Nadu, India">Tamil Nadu</div>
+                <div class="destination-item" data-place-name="Karnataka, India">Karnataka</div>
+                <div class="destination-item" data-place-name="West Bengal, India">West Bengal</div>
+            </div>
+
+            <div id="destination-details"> <div id="details-content"></div>
+                <img id="details-img" class="details-image" src="" alt="Destination Image">
+            </div>
+        </div>
+    </main>
+    <script>
+        // --- START: Navigation Bar & Theme JS (UNCHANGED) ---
+        const themeToggle = document.getElementById('themeToggle');
+        const navMenu = document.querySelector('.nav-menu');
+        const hamburger = document.querySelector('.hamburger');
+        const themeText = document.querySelector('.theme-text');
+
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                themeText.textContent = 'Light Mode';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                themeText.textContent = 'Dark Mode';
+            }
+        }
+
+        const storedTheme = localStorage.getItem('theme');
+
+        if (storedTheme) {
+            setTheme(storedTheme);
+        } else if (prefersDarkScheme.matches) {
+            setTheme('dark');
+        } else {
+            setTheme('light');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            setTheme(currentTheme === 'light' ? 'dark' : 'light');
+        });
+
+        hamburger.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.nav-item a').forEach(item => {
+            item.addEventListener('click', (e) => {
+                // Prevent page jump if links are '#'
+                if (item.getAttribute('href') === '#') {
+                    e.preventDefault();
+                }
+                // Close menu if open
+                if (navMenu.classList.contains('active')) {
+                    navMenu.classList.remove('active');
+                    hamburger.classList.remove('active');
+                }
+            });
+        });
+        // --- END: Navigation Bar & Theme JS (UNCHANGED) ---
+
+
+        // --- START: Destination Details JS (UNCHANGED from previous version) ---
+        const mainContentElement = document.querySelector('.main-content'); // Get main content area
+        const destinationItems = document.querySelectorAll('.destination-item');
+        const destinationDetailsDiv = document.getElementById('destination-details');
+        const detailsContentDiv = document.getElementById('details-content');
+        const detailsImg = document.getElementById('details-img');
+
+        destinationItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const placeName = this.getAttribute('data-place-name');
+
+                // 1. Get Destination Data
+                let details = getDestinationDetails(placeName);
+                const imageUrl = getImageUrlForPlace(placeName); // Get image URL
+
+                // 2. Update Background Image
+                // Set the CSS variable for the pseudo-element's background
+                mainContentElement.style.setProperty('--bg-image-url', `url('${imageUrl}')`);
+                // Add class to fade in the background
+                mainContentElement.classList.add('has-background');
+
+
+                // 3. Populate Details Content
+                const ratingStars = generateRatingStars(details.rating);
+                let topPlacesHTML = '<h4>Top Places to Visit:</h4><ul class="top-places-list">'; // Use h4 for sub-heading
+                details.address.forEach(place => {
+                    topPlacesHTML += `<li>${place}</li>`;
+                });
+                topPlacesHTML += '</ul>';
+
+                detailsContentDiv.innerHTML = `<h3>${details.name}</h3><p>${details.description}</p><p>Rating: <span class="rating-stars">${ratingStars}</span></p>${topPlacesHTML}`;
+
+                // 4. Update Details Image
+                detailsImg.src = imageUrl; // Set foreground image src
+                detailsImg.alt = `Image of ${details.name}`;
+                detailsImg.style.display = 'block'; // Ensure image is block for layout
+
+
+                // 5. Show Details Section with Animation
+                // Remove the visible class briefly to reset animation if clicking another item quickly
+                destinationDetailsDiv.classList.remove('visible');
+
+                // Use a tiny timeout or requestAnimationFrame to ensure the 'visible' class is added *after*
+                // the element is potentially re-rendered (if display was none), allowing the transition to trigger.
+                requestAnimationFrame(() => {
+                     destinationDetailsDiv.classList.add('visible');
+                });
+
+                // Optional: Scroll smoothly to the details section
+                 // destinationDetailsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            });
+        });
+
+        function generateRatingStars(rating) {
+            const fullStars = Math.round(rating);
+            let stars = '';
+            for (let i = 0; i < 5; i++) { // Always loop 5 times
+                stars += (i < fullStars) ? '★' : '☆'; // Use filled star if index < rating, else empty
+            }
+            return stars;
+        }
+
+        // Function to get destination details (UNCHANGED logic)
+        function getDestinationDetails(placeName) {
+             placeName = placeName.split(',')[0].trim(); // Get only the primary name (e.g., "Kerala")
+             switch (placeName.toLowerCase()) {
+                 case 'kerala':
+                     return {
+                         name: 'Kerala, India',
+                         description: 'Kerala, often referred to as "God\'s Own Country," is captivating with tranquil backwaters, lush tea plantations, Ayurvedic treatments, and vibrant Kathakali performances. Serene beaches, intricate canals, and diverse wildlife sanctuaries offer relaxation, cultural immersion, and natural beauty.',
+                         rating: 5,
+                         address: ['Alleppey (Alappuzha) backwaters', 'Munnar tea plantations', 'Kochi (Cochin) historical sites', 'Wayanad hills', 'Varkala cliffs & beaches']
+                     };
+                 case 'goa':
+                     return {
+                         name: 'Goa, India',
+                         description: 'Goa, a former Portuguese colony, boasts stunning beaches, lively nightlife, well-preserved colonial architecture, and delectable seafood. Beyond the coast, explore spice plantations, waterfalls, and a unique cultural blend attracting diverse travelers seeking sun, fun, and history.',
+                         rating: 4,
+                         address: ['Baga & Calangute Beaches', 'Old Goa Churches (UNESCO)', 'Dudhsagar Falls', 'Anjuna Flea Market', 'Palolem Beach (South Goa)']
+                     };
+                 case 'rajasthan':
+                     return {
+                         name: 'Rajasthan, India',
+                         description: 'Rajasthan, the "Land of Kings," showcases majestic forts (Amer, Mehrangarh), opulent palaces (Hawa Mahal), and vibrant cities (Jaipur, Jodhpur). Its rich Rajputana history, intricate crafts, and the Thar Desert offer a journey through India\'s royal heritage.',
+                         rating: 5,
+                         address: ['Jaipur (Amber Fort, City Palace)', 'Udaipur (Lake Pichola, City Palace)', 'Jodhpur (Mehrangarh Fort)', 'Jaisalmer (Golden Fort, Desert Safari)', 'Pushkar (Brahma Temple, Camel Fair)']
+                     };
+                 case 'himachal pradesh':
+                     return {
+                         name: 'Himachal Pradesh, India',
+                         description: 'Nestled in the Himalayas, Himachal Pradesh offers breathtaking views, picturesque hill stations (Shimla, Manali), adventure sports (trekking, paragliding), significant Tibetan culture (McLeod Ganj), and serene valleys providing a refreshing escape.',
+                         rating: 5,
+                         address: ['Shimla (The Ridge, Mall Road)', 'Manali (Solang Valley, Rohtang Pass)', 'McLeod Ganj (Dalai Lama Temple)', 'Spiti Valley (Monasteries, Landscapes)', 'Kasol & Parvati Valley']
+                     };
+                 case 'uttarakhand':
+                     return {
+                         name: 'Uttarakhand, India',
+                         description: 'Uttarakhand, "Dev Bhoomi" (Land of the Gods), is revered for sacred pilgrimage sites (Char Dham), yoga centers (Rishikesh), and stunning natural landscapes including the Himalayas, Valley of Flowers, and Jim Corbett National Park, blending spirituality and adventure.',
+                         rating: 5,
+                         address: ['Rishikesh (Yoga, Adventure Sports)', 'Haridwar (Ganges Aarti)', 'Nainital (Lake District)', 'Auli (Skiing)', 'Jim Corbett National Park (Wildlife Safari)']
+                     };
+                 case 'tamil nadu':
+                     return {
+                         name: 'Tamil Nadu, India',
+                         description: 'Tamil Nadu, steeped in Dravidian culture, features magnificent temples with towering gopurams, classical arts (Bharatanatyam), and vibrant festivals. From Madurai to Chennai and the hills of Ooty, it offers a deep dive into South Indian traditions.',
+                         rating: 4,
+                         address: ['Chennai (Marina Beach, Temples)', 'Madurai (Meenakshi Temple)', 'Mahabalipuram (Shore Temple, UNESCO)', 'Ooty & Kodaikanal (Hill Stations)', 'Rameswaram (Pilgrimage Site)']
+                     };
+                 case 'karnataka':
+                     return {
+                         name: 'Karnataka, India',
+                         description: 'Karnataka boasts diverse attractions: historical Hampi ruins (UNESCO), lush Coorg coffee plantations, the tech hub of Bangalore, majestic Mysore palaces, and coastal beauty. Its varied landscapes and rich history make it a compelling destination.',
+                         rating: 4,
+                         address: ['Bangalore (Lalbagh, Cubbon Park)', 'Hampi (Vijayanagara Ruins)', 'Mysore (Palace, Brindavan Gardens)', 'Coorg (Coffee Estates, Waterfalls)', 'Gokarna & Udupi (Beaches, Temples)']
+                     };
+                 case 'west bengal':
+                     return {
+                         name: 'West Bengal, India',
+                         description: 'West Bengal offers rich culture (Kolkata), Himalayan landscapes (Darjeeling), and unique Sundarbans mangroves. From Tagore\'s legacy to Durga Puja and colonial architecture, it blends history, art, and natural beauty.',
+                         rating: 4,
+                         address: ['Kolkata (Victoria Memorial, Howrah Bridge)', 'Darjeeling (Tea Gardens, Toy Train)', 'Sundarbans National Park (UNESCO)', 'Shantiniketan (Tagore\'s Abode)', 'Kalimpong (Hill Station)']
+                     };
+                 default:
+                     return {
+                         name: placeName + ', India', // Add India suffix
+                         description: 'A beautiful destination in India with unique attractions and experiences awaiting exploration.',
+                         rating: 4, // Default rating
+                         address: ['Local Markets', 'Historical Sites', 'Natural Parks', 'Cultural Centers'] // Generic placeholders
+                     };
+             }
+         }
+
+        // Function to get image URL (UNCHANGED logic)
+        function getImageUrlForPlace(placeName) {
+            const imageName = placeName.split(',')[0].trim().toLowerCase().replace(/ /g, ''); // e.g., "himachalpradesh"
+            const imageExtensions = ['.jpg', '.png', '.jpeg', '.webp']; // Add more extensions if needed
+            // Assumes images like kerala.jpg, goa.jpg are in the same folder. Defaults to .jpg.
+            return `${imageName}.jpg`;
+        }
+        // --- END: Destination Details JS ---
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>आराध्य</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="animations.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400..900&family=Abel&family=Bebas+Neue&family=Righteous&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Special+Gothic+Expanded+One&display=swapfamily=Kalam:wght@300;400;700&family=Jaini&family=Monoton&family=Caveat:wght@400..700&family=Pacifico&family=Bungee+Spice&family=Big+Shoulders+Stencil:opsz,wght@10..72,100..900&family=Bytesized&family=Macondo&family=Playwrite+IN:wght@100..400&family=Poetsen+One&family=Sixtyfour+Convergence&display=swap"
+        rel="stylesheet">
+</head>
+
+<body data-theme="dark">
+    <!-- Animated Background Elements -->
+    <div class="background-animation">
+        <div class="particle particle-1"></div>
+        <div class="particle particle-2"></div>
+        <div class="particle particle-3"></div>
+        <div class="particle particle-4"></div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">आराध्य</div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#">Home</a></li>
+                <li class="nav-item"><a href="#">Destinations</a></li>
+                <li class="nav-item"><a href="#">Tours</a></li>
+                <li class="nav-item"><a href="#">About</a></li>
+                <li class="nav-item"><a href="#">Contact</a></li>
+                <li class="nav-item nav-theme-toggle">
+                    <button id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                        <i class="fas fa-sun"></i>
+                        <span class="theme-text">Dark Mode</span>
+                    </button>
+                </li>
+                <li class="nav-item nav-cta"><a href="#">Sign In</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Slideshow -->
+    <section class="hero">
+        <div class="slideshow-container">
+            <div class="slide fade">
+                <img src="Beach.png" alt="Beach destination">
+                <div class="slide-content">
+                    <h2 class="slide-title">Discover Hidden Paradises</h2>
+                    <p class="slide-desc">Explore the world's most beautiful secluded beaches</p>
+                </div>
+            </div>
+            <div class="slide fade">
+                <img src="Mountain.png" alt="Mountain destination">
+                <div class="slide-content">
+                    <h2 class="slide-title">Conquer Majestic Peaks</h2>
+                    <p class="slide-desc">Experience the thrill of mountain adventures</p>
+                </div>
+            </div>
+            <div class="slide fade">
+                <img src="Jaipur.png" alt="City destination">
+                <div class="slide-content">
+                    <h2 class="slide-title">Immerse in Urban Wonders</h2>
+                    <p class="slide-desc">Discover the pulse of vibrant cities</p>
+                </div>
+            </div>
+            <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+            <a class="next" onclick="plusSlides(1)">&#10095;</a>
+        </div>
+
+        <!-- Plan Board -->
+        <div class="plan-board">
+            <h2 class="board-title">Your Adventure Awaits</h2>
+            <div class="plan-now-btn">Plan Now</div>
+            <div class="sub-buttons">
+                <button class="sub-btn"><i class="fas fa-plus-circle"></i> New Trip</button>
+                <button class="sub-btn"><i class="fas fa-compass"></i> Explore</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Destination Sections with Scroll Animations -->
+    <!-- <section class="section destinations">
+        <div class="section-container">
+            <h2 class="section-title scroll-animate">Popular Destinations</h2>
+            <p class="section-desc scroll-animate">Explore our most sought-after travel spots around the globe</p>
+
+            <div class="destination-grid">
+                <div class="destination-card scroll-animate">
+                    <img src="Chittor Fort.png" alt="Chittorgarh Fort">
+                    <div class="card-content">
+                        <h3>Chittorgarh , Rajasthan</h3>
+                        <p>वीरों की भूमि</p>
+                        <button class="card-btn">Explore</button>
+                    </div>
+                </div>
+                <div class="destination-card scroll-animate">
+                    <img src="Assam.png" alt="Assam">
+                    <div class="card-content">
+                        <h3>Assam</h3>
+                        <p>हरियाली</p>
+                        <button class="card-btn">Explore</button>
+                    </div>
+                </div>
+                <div class="destination-card scroll-animate">
+                    <img src="Manali.png" alt="Manali">
+                    <div class="card-content">
+                        <h3>Manali , Hiamchal Pradesh</h3>
+                        <p>शिखर</p>
+                        <button class="card-btn">Explore</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+    <section class="section features">
+        <div class="section-container">
+            <h2 class="section-title scroll-animate">Why Choose Us</h2>
+            <p class="section-desc scroll-animate">We make travel planning effortless and memorable</p>
+
+            <div class="features-grid">
+                <div class="feature-card scroll-animate">
+                    <div class="feature-icon"><i class="fas fa-globe"></i></div>
+                    <h3>Global Coverage</h3>
+                    <p>Access to destinations across all continents with local experts</p>
+                </div>
+                <div class="feature-card scroll-animate">
+                    <div class="feature-icon"><i class="fas fa-cogs"></i></div>
+                    <h3>Custom Plans</h3>
+                    <p>Tailored itineraries that match your preferences perfectly</p>
+                </div>
+                <div class="feature-card scroll-animate">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Travel Safe</h3>
+                    <p>24/7 support and comprehensive insurance options</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<div class="contact-modal" id="contactModal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Contact Us</h2>
+        <div class="contact-info">
+            <div class="contact-item">
+                <i class="fas fa-envelope"></i>
+                <p>info@DalBaati.com</p>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-phone"></i>
+                <p>+91 124 421(My name is Lakhan)</p>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <p>Mewar , Rajasthan</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-copyright">
+             2025 आराध्य. All Rights Reserved ©
+        </div>
+
+        <div class="footer-copyright">
+            For those groups who can never plan 💀
+       </div>
+    </div>
+</footer>
+
+    <script src="slideshow.js"></script>
+    <script src="scrollAnimations.js"></script>
+    <script src="themeSwitcher.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
