@@ -154,5 +154,6 @@ LOGGING = {
         },
     },
 }
+ALLOWED_HOSTS = ['1e92-115-96-94-89.ngrok-free.app', 'localhost', '127.0.0.1']
 
 

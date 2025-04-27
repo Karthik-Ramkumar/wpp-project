@@ -148,7 +148,7 @@ body {
   gap: 0.5rem;
   padding: 0.5rem;
   border-radius: 0.375rem;
-  background: linear-gradient(to left, #7fb2fd, #f7b7a3);
+  background: linear-gradient(to left, #7ffdf7, #f7b7a3);
   background-size: 400% 400%;
   animation: gradientShift 10s ease infinite;
 }

@@ -140,7 +140,7 @@ async function addDestination(isSubStop) {
                 //trip_id: currentTripId,
                 name: destinationName,
                 lat: coordinates.lat,
-                lng: coordinates.lng,
+                lng: coordinates.lng,  
             }),
         });
 
@@ -163,6 +163,7 @@ async function addDestination(isSubStop) {
     updateMapMarkers();
     
 }
+
 
 async function geocodeLocation(locationName) {
     try {
@@ -198,6 +199,7 @@ function renderDestinationsList() {
         });
     });
 }
+
 
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
@@ -277,6 +279,7 @@ async function fetchTrips() {
         console.error("Error fetching trips:", error);
     }
 }
+
 
 
 async function loadUserTrips(username) {
@@ -448,3 +451,5 @@ function deleteStop(stopName) {
       }
     });
   }
+
+  

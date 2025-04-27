@@ -128,7 +128,6 @@ def save_stop(request):
         stop_name = data.get("name")
         lat = data.get("lat")
         lng = data.get("lng")
-        # isSubstop = data.get("isSubstop")
 
         if not (stop_name and lat and lng): # removed trip_id
             logger.error("Missing required fields")
