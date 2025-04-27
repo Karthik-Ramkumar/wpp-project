@@ -15,7 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
             navMenu.classList.remove('active');
         });
     });
-    
+    document.getElementById('exploreBtn').addEventListener('click', function() {
+        window.open('file:///home/karthik/git/wpp-project/chris_explorePage/home.html', '_blank');
+    });
     // Navbar scroll effect
     window.addEventListener('scroll', function() {
         const navbar = document.querySelector('.navbar');
