@@ -118,47 +118,39 @@
     </div>
     <!--travel expense popup-->
 
+<!-- Minimal HTML with only necessary elements -->
+<button class="sidebar-btn expense-btn">
+  <span style="font-size: 24px;">₹</span> 
+  <span>Manage Expense</span>
+</button>
+
 <!-- Pop-up for expense management -->
-<div id="expensePopup" class="expense-popup">
-  <div class="popup-content">
-    <span id="closeExpenseBtn" class="close-btn">&times;</span>
-    <h3>Manage Travel Expenses</h3>
-    
-    <!-- Form for adding expense -->
-    <form id="expenseForm" method="POST" action="{% url 'manage_expenses' %}">
-      {% csrf_token %}
-      <label for="stopName">Stop Name:</label>
-      <input type="text" id="stopName" name="stopName" required>
+<div id="expensePopup" class="expense-popup" style="display: none;">
+<div class="popup-content">
+  <span id="closeExpenseBtn" class="close-btn">&times;</span>
+  <h3>Manage Travel Expenses</h3>
+  <form id="expenseForm">
+    <label for="stopName">Stop Name:</label>
+    <input type="text" id="stopName" name="stopName" required>
 
-      <label for="expense">Expense (₹):</label>
-      <input type="number" id="expense" name="expense" required>
+    <label for="expense">Expense (₹):</label>
+    <input type="number" id="expense" name="expense" required>
 
-      <label for="note">Note:</label>
-      <textarea id="note" name="note"></textarea>
+    <label for="note">Note:</label>
+    <textarea id="note" name="note"></textarea>
 
-      <button type="submit">Add Expense</button>
-    </form>
+    <button type="submit">Add Expense</button>
+  </form>
 
-    <!-- Display expenses list -->
-    <div id="expenseList">
-      <h4>Expenses:</h4>
-      <ul id="expenses">
-        {% for expense in expenses %}
-          <li>
-            <strong>{{ expense.stop_name }}</strong>: ₹{{ expense.expense }}
-            {% if expense.note %}
-              <br><em>Note:</em> {{ expense.note }}
-            {% endif %}
-          </li>
-        {% empty %}
-          <li>No expenses added yet.</li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    <!-- Display total cost -->
-    <h4>Total Cost: ₹<span id="totalCost">0</span></h4>
+  <div id="expenseList">
+    <h4>Expenses:</h4>
+    <ul id="expenses">
+      <!-- List of added expenses will appear here -->
+    </ul>
   </div>
+
+  <h4>Total Cost: ₹<span id="totalCost">0</span></h4>
+</div>
 </div>
 
     <!-- Load JavaScript -->

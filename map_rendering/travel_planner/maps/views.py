@@ -58,7 +58,7 @@ def get_google_maps_api_key(request):
 
 
 def get_user():
-    karthik1, created = User.objects.get_or_create(username="karthik1")
+    karthik1, created = User.objects.get_or_create(username="karthik1") # type: ignore
     return karthik1
 
 def user_dashboard(request):
