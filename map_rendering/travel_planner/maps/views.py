@@ -169,19 +169,27 @@ def delete_stop(request):
 from django.http import HttpResponse # type: ignore
 from .models import Trip, Destination
 
+from django.http import HttpResponse
+from .models import Trip, Destination, Expense
+
 def write_summary(request):
     trip = Trip.objects.get(name="trip1")  # or get current trip logic
     destinations = Destination.objects.filter(trip=trip)
+    expenses = Expense.objects.filter()
+
 
     with open("summary.txt", "w") as f:
+        # Write the header section
         f.write("="*70 + "\n")
         f.write(f"{'🌎 Your Ultimate Trip Summary':^70}\n")
         f.write("="*70 + "\n\n")
 
+        # Write trip details
         f.write(f"🏷️  **Trip Name**        : {trip.name}\n")
         f.write(f"📅  **Start Date**       : {trip.start_date.strftime('%B %d, %Y')}\n")
         f.write(f"🏁  **End Date**         : {trip.end_date.strftime('%B %d, %Y')}\n\n")
         
+        # Write destinations overview
         f.write("-" * 70 + "\n")
         f.write(f"{'🌍  Destinations Overview':^70}\n")
         f.write("-" * 70 + "\n\n")
@@ -189,10 +197,31 @@ def write_summary(request):
         for i, dest in enumerate(destinations, start=1):
             f.write(f"{i}. {dest.name.title():<25} | Latitude: {dest.latitude:<15} | Longitude: {dest.longitude}\n")
         
+        # Write the total stops and trip duration
         f.write("\n" + "-" * 70 + "\n")
         f.write(f"✈️  **Total Stops**      : {len(destinations)}\n")
         f.write(f"💼  **Trip Duration**    : {trip.start_date.strftime('%B %d, %Y')} to {trip.end_date.strftime('%B %d, %Y')}\n")
         
+        # Write expenses overview
+        f.write("\n" + "="*70 + "\n")
+        f.write(f"💵  **Expenses Overview**\n")
+        f.write("="*70 + "\n\n")
+        
+        if expenses.exists():
+            total_expense = 0
+            for expense in expenses:
+                f.write(f"🛑  **Stop Name**: {expense.stop_name}\n")
+                f.write(f"💸  **Expense** : ₹{expense.expense}\n")
+                if expense.note:
+                    f.write(f"📝  **Note**    : {expense.note}\n")
+                f.write("-" * 70 + "\n")
+                total_expense += expense.expense
+
+            f.write(f"\n**Total Expenses**: ₹{total_expense}\n")
+        else:
+            f.write("No expenses recorded for this trip.\n")
+        
+        # Closing the summary
         f.write("\n" + "="*70 + "\n")
         f.write(f"🌟 **Have a great trip!** 🌟\n")
         f.write(f"📸 Don’t forget to capture memories at each stop!\n")
@@ -212,46 +241,43 @@ def write_summary(request):
         return JsonResponse({"username": request.user.username})
     return JsonResponse({"error": "Not logged in"}, status=401)'''
 
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from .models import Expense
 
-from django.shortcuts import render, redirect
-from .models import Expense
-
+@csrf_exempt  # You can use the CSRF token from the frontend to bypass the need for this decorator
 def add_expense(request):
-    if request.method == "POST":
-        stop_name = request.POST.get("stop_name")
-        expense = request.POST.get("expense")
-        note = request.POST.get("note")
-
-        if stop_name and expense:
-            # Save the expense
-            Expense.objects.create(
-                stop_name=stop_name,
-                expense=float(expense),
-                note=note
-            )
-    
-    # Fetch all expenses to display
-    expenses = Expense.objects.all()
-    return render(request, "test1.html", {"expenses": expenses})
-
-def manage_expenses(request):
-    # Get all expenses to display
-    expenses = Expense.objects.all()
-    total_cost = sum(expense.expense for expense in expenses)
-
     if request.method == 'POST':
-        stop_name = request.POST.get('stopName')
-        expense = request.POST.get('expense')
-        note = request.POST.get('note', '')
+        data = json.loads(request.body)
+        stop_name = data.get('stop_name')
+        expense = data.get('expense')
+        note = data.get('note', '')
 
-        if stop_name and expense:
-            Expense.objects.create(stop_name=stop_name, expense=float(expense), note=note)
+        # Save the new expense
+        new_expense = Expense.objects.create(
+            stop_name=stop_name,
+            expense=expense,
+            note=note,
+        )
 
-        return redirect('manage_expenses')
+        # Return the saved expense as JSON to update the frontend
+        return JsonResponse({
+            'stop_name': new_expense.stop_name,
+            'expense': new_expense.expense,
+            'note': new_expense.note,
+        })
 
-    return render(request, 'test1.html', {
-        'expenses': expenses,
-        'total_cost': total_cost
+def get_expenses(request):
+    expenses = Expense.objects.all()
+    expenses_data = [{
+        'stop_name': expense.stop_name,
+        'expense': expense.expense,
+        'note': expense.note,
+    } for expense in expenses]
+
+    total_cost = sum(expense['expense'] for expense in expenses_data)
+
+    return JsonResponse({
+        'expenses': expenses_data,
+        'total_cost': total_cost,
     })

@@ -454,6 +454,7 @@ function deleteStop(stopName) {
 
 //---------------------------------------
 // Get references to elements
+// Get references to elements
 const openExpenseBtn = document.querySelector('.expense-btn');
 const closeExpenseBtn = document.getElementById('closeExpenseBtn');
 const expensePopup = document.getElementById('expensePopup');
@@ -464,46 +465,83 @@ const totalCostElement = document.getElementById('totalCost');
 // Event listener to open the pop-up
 openExpenseBtn.addEventListener('click', () => {
   expensePopup.style.display = 'block';
+  loadExpenses();  // Load existing expenses when the pop-up opens
 });
 
 // Event listener to close the pop-up
 closeExpenseBtn.addEventListener('click', () => {
-    expensePopup.style.display = 'none';
-  });
+  expensePopup.style.display = 'none';
+});
 
 // Handle form submission (add expense)
 expenseForm.addEventListener('submit', (e) => {
   e.preventDefault();
-
+  
   const stopName = document.getElementById('stopName').value;
-  const expense = parseFloat(document.getElementById('expense').value);
+  const expense = document.getElementById('expense').value;
   const note = document.getElementById('note').value;
+  
+  const expenseData = {
+    stop_name: stopName,
+    expense: expense,
+    note: note,
+  };
 
-  if (stopName && expense) {
-    // Create a new list item for the expense
-    const expenseItem = document.createElement('li');
-    expenseItem.textContent = `${stopName}: ₹${expense} - ${note || 'No note'}`;
-
-    // Add to the expense list
-    expensesList.appendChild(expenseItem);
-
-    // Update the total cost
-    updateTotalCost(expense);
-
-    // Clear the form
-    expenseForm.reset();
-  }
+  // Send the expense data to Django (POST request)
+  fetch('/add_expense/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken'),  // Get CSRF token for security
+    },
+    body: JSON.stringify(expenseData),
+  })
+  .then(response => response.json())
+  .then(data => {
+    // Add the new expense to the list without refreshing the page
+    addExpenseToList(data);
+    updateTotalCost();
+    expensePopup.style.display = 'none';  // Close the popup after adding the expense
+  })
+  .catch(error => console.error('Error:', error));
 });
 
-// Function to update the total cost
-function updateTotalCost(expense) {
-    const totalCostElement = document.getElementById('totalCost');
-    if (totalCostElement) {  // Check if element exists
-      let currentTotal = parseFloat(totalCostElement.textContent);
-      currentTotal += expense;
-      totalCostElement.textContent = currentTotal.toFixed(2);
-    } else {
-      console.error("Total cost element not found!");
-    }
-  }
+// Function to load expenses from the server
+function loadExpenses() {
+  fetch('/get_expenses/')
+    .then(response => response.json())
+    .then(data => {
+      expensesList.innerHTML = '';  // Clear the current list
+      data.expenses.forEach(expense => {
+        addExpenseToList(expense);
+      });
+      updateTotalCost();
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Function to update total cost
+function updateTotalCost() {
+  const totalCost = Array.from(expensesList.children)
+    .reduce((total, expense) => total + parseFloat(expense.dataset.expense), 0);
+
+  totalCostElement.textContent = totalCost.toFixed(2);
+}
+
+// Function to add expense to the list
+function addExpenseToList(expense) {
+  const li = document.createElement('li');
+  li.dataset.expense = expense.expense;
+  li.innerHTML = `
+    <strong>${expense.stop_name}</strong>: ₹${expense.expense}
+    ${expense.note ? `<br><em>Note:</em> ${expense.note}` : ''}
+  `;
+  expensesList.appendChild(li);
+}
+
+// Utility function to get CSRF token (for POST requests)
+/*function getCookie(name) {
+  const cookieValue = document.cookie.match(`(?<=^|;)\\s*${name}=([^;]*)`);
+  return cookieValue ? cookieValue[1] : null;
+}*/
   
