@@ -21,4 +21,6 @@ urlpatterns = [
     path("save_stop/", views.save_stop, name="save_stop"),
     path('delete_stop/', views.delete_stop, name='delete_stop'),
     path('save-trip/', views.write_summary, name='save_trip'),
+    path("add_expense/", views.add_expense, name="add_expense"),
+    path('manage-expenses/', views.manage_expenses, name='manage_expenses'),
 ]

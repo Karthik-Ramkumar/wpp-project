@@ -211,3 +211,47 @@ def write_summary(request):
     if request.user.is_authenticated:
         return JsonResponse({"username": request.user.username})
     return JsonResponse({"error": "Not logged in"}, status=401)'''
+
+from django.shortcuts import render, redirect
+from .models import Expense
+
+from django.shortcuts import render, redirect
+from .models import Expense
+
+def add_expense(request):
+    if request.method == "POST":
+        stop_name = request.POST.get("stop_name")
+        expense = request.POST.get("expense")
+        note = request.POST.get("note")
+
+        if stop_name and expense:
+            # Save the expense
+            Expense.objects.create(
+                stop_name=stop_name,
+                expense=float(expense),
+                note=note
+            )
+    
+    # Fetch all expenses to display
+    expenses = Expense.objects.all()
+    return render(request, "test1.html", {"expenses": expenses})
+
+def manage_expenses(request):
+    # Get all expenses to display
+    expenses = Expense.objects.all()
+    total_cost = sum(expense.expense for expense in expenses)
+
+    if request.method == 'POST':
+        stop_name = request.POST.get('stopName')
+        expense = request.POST.get('expense')
+        note = request.POST.get('note', '')
+
+        if stop_name and expense:
+            Expense.objects.create(stop_name=stop_name, expense=float(expense), note=note)
+
+        return redirect('manage_expenses')
+
+    return render(request, 'test1.html', {
+        'expenses': expenses,
+        'total_cost': total_cost
+    })

@@ -450,6 +450,60 @@ function deleteStop(stopName) {
         alert('Failed to delete stop');
       }
     });
-  }
+}
 
+//---------------------------------------
+// Get references to elements
+const openExpenseBtn = document.querySelector('.expense-btn');
+const closeExpenseBtn = document.getElementById('closeExpenseBtn');
+const expensePopup = document.getElementById('expensePopup');
+const expenseForm = document.getElementById('expenseForm');
+const expensesList = document.getElementById('expenses');
+const totalCostElement = document.getElementById('totalCost');
+
+// Event listener to open the pop-up
+openExpenseBtn.addEventListener('click', () => {
+  expensePopup.style.display = 'block';
+});
+
+// Event listener to close the pop-up
+closeExpenseBtn.addEventListener('click', () => {
+    expensePopup.style.display = 'none';
+  });
+
+// Handle form submission (add expense)
+expenseForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  const stopName = document.getElementById('stopName').value;
+  const expense = parseFloat(document.getElementById('expense').value);
+  const note = document.getElementById('note').value;
+
+  if (stopName && expense) {
+    // Create a new list item for the expense
+    const expenseItem = document.createElement('li');
+    expenseItem.textContent = `${stopName}: ₹${expense} - ${note || 'No note'}`;
+
+    // Add to the expense list
+    expensesList.appendChild(expenseItem);
+
+    // Update the total cost
+    updateTotalCost(expense);
+
+    // Clear the form
+    expenseForm.reset();
+  }
+});
+
+// Function to update the total cost
+function updateTotalCost(expense) {
+    const totalCostElement = document.getElementById('totalCost');
+    if (totalCostElement) {  // Check if element exists
+      let currentTotal = parseFloat(totalCostElement.textContent);
+      currentTotal += expense;
+      totalCostElement.textContent = currentTotal.toFixed(2);
+    } else {
+      console.error("Total cost element not found!");
+    }
+  }
   
